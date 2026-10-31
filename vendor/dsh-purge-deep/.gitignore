@@ -1,0 +1,23 @@
+# 依赖与构建产物
+node_modules/
+*.tgz
+npm-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+
+# 本地草稿
+scripts/tmp-*.mjs
+scripts/test-*.mjs
+.scratch/
+
+# 嵌入前的提示词原文（由 scripts/embed-default-prompt.mjs 生成加密槽）
+lib/default-prompt-inject.md
+default-prompt-inject.md
+
+# 本地官方安装包、解包目录、拆出的压缩包
+/deepseek-harness-*.exe
+/official-harness-unpacked/
+/official-harness-payload.7z
+*.asar
+*.asar.bak

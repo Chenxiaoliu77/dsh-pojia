@@ -1,0 +1,14 @@
+# dsh-infinite-gen-x bundle patch
+#
+# 两个开关走 config，改这里即可切换，无需改源码；缺省值与原硬编码行为一致。
+#   dualLayerInjection: true  = 双层注入（Order 100 + Order 200 各一份内核载荷）
+#                       false = 单段注入（仅 Order 100），省重复 token，行为等价
+#   refusalCorrective:  true  = armor 检测到上轮 refusal/fallback 时，下一轮在 Order 150 追加纠偏
+#                       false = 不注入纠偏段（armor 仅投影，不干预）
+# 改完需重启 Harness 生效（fiber 一次性 apply）。
+- insert:
+    - id: dsh-infinite-gen-x
+      name: dsh-infinite-gen-x
+      config:
+        dualLayerInjection: true
+        refusalCorrective: true

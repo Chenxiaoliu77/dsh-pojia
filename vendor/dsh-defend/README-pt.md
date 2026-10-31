@@ -1,0 +1,386 @@
+<div align="center">
+
+# 🛡️ dsh-defend
+- **Canal 1024 store**: `npm i -g dsh1024` uma vez, depois `dsh1024 plugin --profile web add dsh-defend` (conta para o ranking de instalações do [deepseek1024.com](https://deepseek1024.com)).
+
+**Defesa contra injeção de prompts, jailbreak e vazamento de segredos para o DeepSeek Harness.**
+
+*Regras decidem o conhecido. A interceptação decide o resto — e tudo fica auditado.*
+
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Gitee](https://img.shields.io/badge/Gitee-mirror-c71d23?logo=gitee)](https://gitee.com/perrylink/dsh-defend)
+[![DSH plugin](https://img.shields.io/badge/dsh--plugin-✅-green)](https://github.com/topics/dsh-plugin)
+[![dsh-doctor](https://raw.githubusercontent.com/PerryLink/dsh-plugin-doctor/main/badges/PerryLink__dsh-defend.svg)](https://github.com/PerryLink/dsh-plugin-doctor#verified-徽章)
+[![DSH Market](https://raw.githubusercontent.com/2BingLing/dsh-market/master/assets/readme/badge-listed-en.svg)](https://dsh.market/)
+[![Node](https://img.shields.io/badge/node-%5E22.19%20%7C%7C%20%3E%3D24-brightgreen.svg)](#)
+[![CI](https://img.shields.io/github/actions/workflow/status/PerryLink/dsh-defend/ci.yml?branch=main&label=CI)](https://github.com/PerryLink/dsh-defend/actions)
+[![Version](https://img.shields.io/github/v/tag/PerryLink/dsh-defend?label=version)](https://github.com/PerryLink/dsh-defend/releases)
+[![npm version](https://img.shields.io/npm/v/dsh-defend)](https://www.npmjs.com/package/dsh-defend)
+[![npm downloads](https://img.shields.io/npm/dm/dsh-defend)](https://www.npmjs.com/package/dsh-defend)
+[![dshfind](https://dshfind.com/api/badge/PerryLink/dsh-defend?metric=downloads&lang=pt)](https://dshfind.com/pt/plugins/PerryLink/dsh-defend?ref=badge)
+
+[English](README.md) · [简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
+
+```sh
+dsh plugin --profile <name> add dsh-defend
+```
+
+
+</div>
+
+---
+
+
+**📖 Base de conhecimento do ecossistema** — dados medidos, não marketing: [guia de desenvolvimento · dados de seleção · critérios de manutenção](https://perrylink.github.io/dsh-plugin-guide/).
+
+<!-- star-cta -->
+
+## Instalação e desinstalação
+
+- **Canal git** (último `main`): `dsh plugin --profile web add github:PerryLink/dsh-defend` — o script `prepare` compila apenas com dependências de produção.
+- **Canal npm** (versões publicadas): `dsh plugin --profile web add dsh-defend`.
+- **Canal tarball**: `pnpm pack` neste repositório e então `dsh plugin --profile web add ./dsh-defend-<version>.tgz`.
+- **Desinstalar**: `dsh plugin --profile web remove dsh-defend` (ou remova a linha do patch do perfil).
+
+## What is dsh-defend?
+
+Defesa contra injeção de prompts, jailbreak e vazamento de segredos para o DeepSeek Harness.
+
+Regras decidem o conhecido. A interceptação decide o resto — e tudo fica auditado.
+
+![Diagrama de fluxo de dsh-defend: solicitação → política/revisão → veredito.](docs/assets/dsh-defend-flow.svg)
+
+*Visão geral do fluxo: solicitação → política/revisão → veredito. Os exemplos abaixo usam a superfície real de comandos.*
+
+
+*A mesma execução, animada.*
+
+## Status de manutenção: 🧊 CONGELADO
+
+> **Congelado em 2026-10-05. Sem novos recursos.** Este pacote continua funcionando e **não foi aposentado**, mas não recebe mais trabalho de recursos; apenas uma falha real será corrigida.
+
+Os mantenedores consideram que nesta capacidade **já existem alternativas com melhor adoção**, então o esforço foi redirecionado. Comparação medida em 2026-10-05:
+
+| | pacote | downloads semanais |
+|---|---|---|
+| **este pacote** | `dsh-defend` | 937 |
+| alternativa mais adotada | [`cc-safety-net`](https://github.com/kenryu42/cc-safety-net) | **13,087** |
+
+👉 **Para trabalho novo, prefira `cc-safety-net`.** Este pacote continua sendo o detector mais amplo, mas está congelado e não receberá novos recursos. As instalações existentes continuam funcionando sem alterações.
+
+*Evidência completa: `dsh-plugin-supersession-review-20261005.md`. Texto completo na seção **Maintenance status: 🧊 FROZEN** de [README.md](README.md).*
+
+## ⭐ 如果它帮到了你
+
+Este plugin faz parte da [família de plugins DSH](https://github.com/PerryLink) (mais de 40, todos Apache-2.0). Se for útil, **deixe uma estrela**: não desbloqueia nada, mas ajuda a próxima pessoa a encontrá-lo.
+
+*English:* part of a 95 plugin family for DeepSeek Harness. If it is useful, **a star helps the next person find it** — nothing is gated behind it.
+
+## Comparison
+
+![Gráfico comparativo medido do dsh-defend](https://raw.githubusercontent.com/PerryLink/dsh-defend/main/docs/assets/dsh-defend-evidence.png)
+
+105 samples (75 positive / 30 negative) · from benchmark/RESULTS.md in this repo
+
+## Compatibilidade
+
+| Superfície | Status |
+|---|---|
+| Harness | DeepSeek Harness `dsh-v0.2.1-alpha.1` (verificado em 2026-09-25; intervalos de peer `>=0.1.2-rc.1 <0.2.0 \|\| >=0.1.5-alpha.1 <0.2.0 \|\| >=0.1.6-0 <0.2.0 \|\| >=0.1.7-0 <0.2.0`). Nesta linha o terceiro argumento de `Session.append` existe apenas para tipos de superfície e é um `SurfaceIntent`, então o tipo não-superfície `defend/detection` continua sem poder estampar o marcador `ignorable`: a auditoria do log de sessão permanece desabilitada fail-closed e o `/defend` mostra esse estado explicitamente. O formato de sessão V4 não tem mais bloco de conteúdo `tool-result` — este plugin nunca o produziu, e seus dois walkers de conteúdo mantêm um fallback **somente leitura** para o wrapper V3 aposentado, de modo que sessões gravadas antes da atualização continuam sendo analisadas. Verificado em 2026-09-25 (typecheck duplo + suíte completa + build + portas self-contained/artifacts + pack; uma única cópia do grafo de tipos do host). |
+| Node | `^22.19.0 \|\| >=24.0.0` |
+| Plataformas | Todas (somente host; sem código nativo, sem rede) |
+| Modelo | Qualquer (a detecção ocorre antes de o conteúdo chegar ao modelo) |
+
+## O que você ganha
+
+O `dsh-defend` coloca duas camadas independentes diante do agente:
+
+1. **Guarda de exclusão destrutiva** — a forma executável da lição do postmortem 8·14/8·16. Em `tools/pre-execute`, comandos de shell que apagam recursivamente são recusados a menos que **cada** alvo seja um caminho absoluto explícito dentro do workspace da sessão e fora dos prefixos protegidos (configuração do home, `.dsh`/`.claude`, diretórios do sistema). Marcadores de dry-run (`-WhatIf`, `--dry-run`, `git clean -n`) passam, porque são exatamente a verificação que a lição exige.
+2. **Camada de detecção** — portada de quatro ativos upstream (todos Apache-2.0, veja THIRD_PARTY_NOTICES.md): 25 regras do Prompt-Injection-Payloads, 25 padrões do Jailbreak-Detector por um autômato Aho-Corasick em TypeScript puro, 12 gramáticas de segredos do Secret-Key-Leaker-Detect mais as referências públicas dos emissores, e o Prompt-Attack-Dataset mantido literalmente como referência de regressão.
+
+Três pontos de interceptação, um modelo de decisão:
+
+| Ponto | Conteúdo escaneado | Decisão |
+|---|---|---|
+| `agent/pre-step` | mensagens de entrada | allow → `next()`; ask → aprovação; block → rejeitar o passo |
+| `tools/pre-execute` | argumentos de ferramentas | allow → `next()`; ask → aprovação; block → deny |
+| `tools/post-execute` | resultados de ferramentas | allow → `next()`; ask → aprovação; block → feedback corretivo |
+
+Padrões: `ask` para cada família, `block` para segredos **critical** (a semântica de interrupção imediata do upstream). Sem respondedor de aprovação = falha fechada. Todo repasse chama `next()` — plugins de política a jusante nunca são curto-circuitados.
+
+## Início rápido
+
+```sh
+dsh plugin --profile web add github:PerryLink/dsh-defend
+```
+
+```sh
+# 1. instale o bundle no seu perfil
+dsh plugin --profile web add github:PerryLink/dsh-defend
+
+# ou pelo npm (versões publicadas)
+dsh plugin --profile web add dsh-defend
+
+# 2. reinicie e verifique a linha
+dsh --profile web --dump-config | grep -A3 'id: dsh-defend'
+```
+
+### Exemplos
+
+São os pontos de entrada reais; instale e chame um.
+
+#### Exemplo detalhado
+
+**Comando**
+
+~~~sh
+defend_report
+~~~
+
+**Entrada**
+
+~~~json
+{}
+~~~
+
+**Saída**
+
+~~~text
+dsh-defend: 0 recorded detection(s), 0 blocked, 0 asked.
+~~~
+
+*Observado em `tests/lifecycle.spec.ts:91-126 (canonical empty value at :110-117); src/index.ts:772-775`*
+
+#### Ramo de falha
+
+**Entrada**
+
+~~~text
+Remove-Item -Recurse
+~~~
+
+**Saída**
+
+~~~text
+{"kind":"deny","reason":"blocked dangerous recursive delete command (Remove-Item -Recurse): no explicit target path was printed. Dry-run first (Remove-Item -WhatIf / git clean -n / list the directory), verify each target one by one, then retry with an explicit absolute path"}
+~~~
+
+*Observado em `plugins/dsh-defend/src/index.ts:376-379; plugins/dsh-defend/tests/destructive-delete.spec.ts:68-71; verified via plugins/dsh-defend/lib/index.js`*
+
+#### Exemplos breves
+
+- `/defend`
+
+## Configuração
+
+Todos os ajustes são campos `Config` do Schemastery (alteráveis pelo cordis.yml). Uma sobrescrita direcionada por id substitui a linha inteira — redeclare cada chave. O `cordis.patch.yml` documenta cada chave em linha.
+
+| Chave | Padrão | Significado |
+|---|---|---|
+| `enabled` | `true` | Interruptor mestre das duas camadas |
+| `action` | `deny` | Ação da guarda de exclusão destrutiva (`deny` / `ask`) |
+| `toolNames` | `['bash','persistent-bash','terminal-bash']` | Ferramentas cujos argumentos a guarda revisa |
+| `detection.enabled` | `true` | Interruptor da camada de detecção |
+| `detection.maxScanChars` | `10000` | Limite de escaneamento por interceptação (somente a cabeça) |
+| `detection.normalizeUnicode` | `true` | Normalizar NFKC o texto antes de escanear (bloqueia o bypass de Unicode lookalike) |
+| `detection.secretMinEntropy` | `3.0` | Entropia de Shannon mínima (bits/caractere) para admitir um acerto de segredo; `0` desativa |
+| `detection.injectionAction` | `ask` | Família injeção: `allow` / `ask` / `block` |
+| `detection.jailbreakAction` | `ask` | Família jailbreak: `allow` / `ask` / `block` |
+| `detection.secretAction` | `ask` | Família segredos: `allow` / `ask` / `block` |
+| `detection.secretBlockCritical` | `true` | Segredos critical sempre bloqueiam, independente de `secretAction` |
+| `detection.audit` | `true` | Gravar eventos de auditoria `defend/detection` |
+| `detection.allowUnmarkedAudit` | `false` | Continuar gravando auditoria de sessão em hosts cujo `Session.append` é anterior ao marcador `ignorable` (todas as linhas publicadas até agora), aceitando o risco de sessões irrecuperáveis |
+| `detection.maxReportEntries` | `200` | Limite do buffer circular em memória |
+| `registerCommand` | `true` | Registrar o comando `/defend` |
+| `registerTool` | `true` | Registrar a ferramenta `defend_report` |
+
+## Ferramentas e superfícies
+
+| Superfície | Tipo | Notas |
+|---|---|---|
+| `defend_report` | ferramenta | Totais (registrados/bloqueados/perguntados), contagens por família e as 20 correspondências mais recentes — nunca texto coincidente |
+| `/defend` | comando | O mesmo resumo em texto |
+| `agent/pre-step` | listener | Escaneamento de mensagens de entrada (enter/reject) |
+| `tools/pre-execute` | listener | Escaneamento de argumentos (deny/ask) + a guarda de exclusão destrutiva |
+| `tools/post-execute` | listener | Escaneamento de resultados (feedback de bloqueio) |
+
+## Permissões e dados
+
+- **Permissões**: decisões `ask` seguem a costura oficial de aprovação; nada é reimplementado ou contornado. O plugin declara `session:append` e `network:none` no seu manifesto de workshop.
+- **Dados**: nada é gravado em disco; o buffer circular do relatório vive em memória e é limitado. Sem requisições de rede, sem subprocessos.
+- **Registro de sessão**: eventos `defend/detection` carregam id da regra, família, categoria, severidade, tipo de segredo, decisão e fatos do escaneamento — texto coincidente nunca chega ao registro, e correspondências de segredos são somente-tipo por construção.
+
+## Limites de segurança
+
+- **Detecção, não execução.** A guarda e a camada de detecção apenas produzem decisões deny/ask/block nas costuras oficiais; o sandbox e os sistemas de aprovação continuam sendo a autoridade de execução.
+- **Falha fechada.** Sem respondedor de aprovação, sem sessão ou sem superfície de serviços, degrada para a decisão mais estrita — nunca para o repasse silencioso.
+- **Nenhum conteúdo sai do processo.** O escaneamento é local; eventos de auditoria são sanitizados; segredos nunca são registrados, exibidos ou reportados.
+- **Trabalho limitado.** Limites de escaneamento, uma correspondência por regra e cotas do buffer circular impedem que entradas hostis consumam recursos sem limite.
+
+## Limitações conhecidas
+
+- **Lacunas de detecção.** A biblioteca de regras cobre os vocabulários portados e suas variantes tolerantes; frases novas, codificações Unicode lookalike (a normalização NFKC está como trabalho futuro) e ataques multi-passo podem escapar. A referência fixa o piso medido (27/28 no dataset upstream) para que regressões fiquem visíveis.
+- **Sem veredictos no nível do modelo.** O `dsh-defend` é determinístico; nunca chama um modelo e não julga intenção nova.
+- **A rejeição de mensagens é silenciosa.** O reject de `agent/pre-step` não leva razão ao modelo (a costura não tem campo de razão); o evento de auditoria registra os fatos da regra.
+- **Auditoria de sessão e o marcador `ignorable`.** Os appends de auditoria solicitam o marcador `ignorable: true` do envelope para que qualquer build do harness consiga carregar o registro. Todas as linhas publicadas até agora (`0.1.0-rc.1`–`0.1.0-rc.8`, `0.1.1-rc.1`–`0.1.1-rc.2`, e o corredor `0.2` — reverificado em 2026-10-04 contra a publicada `0.2.1-alpha.1`, cujo `append(type, data, ...opts)` lê apenas `sourceEventSeqs`/`surfaceOp` do pacote de opções e monta o envelope como `{ type, seq, time, data }`) o descartam silenciosamente — o evento fica sem marcação e torna a sessão irrecuperável em builds mais estritos; o host `0.1.2-rc.1` mantém o campo do envelope apenas para compatibilidade de leitura de logs armazenados, mas o `Session.append` ainda não consegue estampá-lo e o caminho de leitura rejeita tipos de evento desconhecidos sem marcação (`defend/detection` não está registrado), então gravar lá também torna a sessão impossível de carregar. Portanto, o dsh-defend detecta esses hosts no primeiro uso (pré-checagem da versão do peer + sondagem do envelope devolvido) e desativa a auditoria do registro de sessão com um aviso único; os pré-lançamentos `0.2.x` são classificados como não marcados de antemão exatamente por isso, enquanto uma `0.2.x` estável continua recorrendo à sondagem do append. Defina `detection.allowUnmarkedAudit: true` para reativar; linhas `defend/detection` existentes sem marcação podem ser reparadas adicionando `"ignorable": true` aos envelopes. Veja [issue #2](https://github.com/PerryLink/dsh-defend/issues/2).
+
+## Desenvolvimento
+
+```sh
+pnpm install        # node ^22.19 || >=24
+pnpm run typecheck  # tsc: src + tests contra o checkout local do harness
+pnpm run typecheck:ci  # tsc contra os tipos publicados 0.1.7-rc.2 (sem paths)
+pnpm test           # vitest: 97 testes, 9 suítes (inclui a referência de detecção)
+pnpm run build      # bundle tsdown + declarações tsc (lib/)
+pnpm run verify:self-contained  # especificações de dependências resolvem pelo registry
+pnpm run verify:artifacts       # face ESM construída + arquivos publicados presentes
+pnpm pack           # o tarball publicado
+```
+
+### Benchmark
+
+O benchmark red-team (P/R/F1 por categoria em 105 amostras, mais o piso 27/28 do fixture) está em [`benchmark/RESULTS.md`](benchmark/RESULTS.md); regenere-o com `node --experimental-strip-types benchmark/run.mjs` (zero dependências novas, sem build).
+
+## Interoperabilidade com outros plugins do DSH
+
+Verificado contra **DSH `0.2.0-rc.2`** (o runtime para o qual este README é publicado) e o conjunto de plugins com mais estrelas pesquisado em 2026-10-05.
+
+Este plugin **não interfere** em outros plugins, incluindo os de mais estrelas:
+
+- **Sem colisão de nome de ferramenta.** Todas as ferramentas têm namespace; nenhuma ocupa um nome puro já pertencente a uma ferramenta embutida ou a outro plugin.
+- **Sem colisão de chave de serviço.** Não fornece nenhuma chave de serviço, portanto não pode colidir em uma.
+- **Sem colisão de slot.** Não registra nenhuma chave de slot de cliente, então não disputa um assento `shadows-shipped-ui`.
+- **Sem colisão de rota HTTP.** Não registra nenhum prefixo `webServer`.
+- **Sem colisão na camada de patch.** O patch do bundle apenas faz `insert` da própria linha; nunca sobrescreve o `config` de uma linha embutida.
+- **Sem mutação global.** Não altera protótipos, não reescreve `process.env` nem substitui o dispatcher global de fetch.
+
+**Listeners de eventos compartilhados não interferem por construção.** Observa os eventos sensíveis à ordem `agent/pre-step`, `tools/post-execute`, `tools/pre-execute` com `ctx.on()` — o registro de difusão do Cordis, onde cada listener executa e nenhum pode privar outro do turno. **Todos os listeners aqui delegam via `next()`**, então a cadeia nunca é curto-circuitada:
+  - `agent/pre-step` — also used by `dsh-routing-suite` (7000★, 7 listeners), `modlens` (4122★), `dsh-purge` (3317★), `dsh-agent-teams` (1923★), `dsh-context` (1849★).
+  - `tools/post-execute` — also used by `cc-safety-net` (1576★).
+  - `tools/pre-execute` — also used by `cc-safety-net` (1576★).
+
+Evidência estática: `dsh-plugin-doctor` K10–K13 retornam `pass` em todas as verificações deste repositório.
+
+## Topics
+
+`dsh`, `dsh-plugin`, `deepseek-harness`, `deepseek`, `cordis`, `security`, `prompt-injection`, `jailbreak`, `secret-scanning`, `ai-safety`
+
+## Contributors
+
+- [@PerryLink](https://github.com/PerryLink) — criador e mantenedor: guarda de exclusão destrutiva, portado de detecção de quatro ativos, fiação de interceptação, superfície de auditoria e a documentação em cinco idiomas.
+- [@cuohua](https://github.com/cuohua) — o relatório preciso sobre eventos `defend/detection` gravados sem marcação tornando sessões irrecuperáveis em builds mais estritos ([#2](https://github.com/PerryLink/dsh-defend/issues/2)); a detecção de capacidade de host em runtime e a disciplina do marcador `ignorable` derivam diretamente dessa análise.
+
+## PerryLink DSH Plugin Family
+
+Este projeto faz parte da família de plugins do DeepSeek Harness da [PerryLink](https://github.com/PerryLink). O registro fica recolhido abaixo para que cada README mantenha uma primeira tela curta; expanda para ver cada linha e seu status.
+
+<details>
+<summary>Expandir todos os plugins</summary>
+
+| Plugin | Status |
+|---|---|
+| **[dsh-aqua-input-check](https://github.com/PerryLink/dsh-aqua-input-check)** |  |
+| **[dsh-archive-check](https://github.com/PerryLink/dsh-archive-check)** |  |
+| **[dsh-auto-review](https://github.com/PerryLink/dsh-auto-review)** |  |
+| **[dsh-autotier](https://github.com/PerryLink/dsh-autotier)** |  |
+| **[dsh-bid-ca-precheck](https://github.com/PerryLink/dsh-bid-ca-precheck)** |  |
+| **[dsh-bid-qual-check](https://github.com/PerryLink/dsh-bid-qual-check)** |  |
+| **[dsh-cert-mcp](https://github.com/PerryLink/dsh-cert-mcp)** |  |
+| **[dsh-checkpoint-rewind](https://github.com/PerryLink/dsh-checkpoint-rewind)** |  |
+| **[dsh-click](https://github.com/PerryLink/dsh-click)** |  |
+| **[dsh-composer-history](https://github.com/PerryLink/dsh-composer-history)** |  |
+| **[dsh-contract-stance](https://github.com/PerryLink/dsh-contract-stance)** |  |
+| **[dsh-customs-doc-check](https://github.com/PerryLink/dsh-customs-doc-check)** |  |
+| **[dsh-data-quality](https://github.com/PerryLink/dsh-data-quality)** |  |
+| **[dsh-demurrage-ledger](https://github.com/PerryLink/dsh-demurrage-ledger)** |  |
+| **[dsh-doublecheck](https://github.com/PerryLink/dsh-doublecheck)** |  |
+| **[dsh-drill-script-check](https://github.com/PerryLink/dsh-drill-script-check)** |  |
+| **[dsh-eia-guide-check](https://github.com/PerryLink/dsh-eia-guide-check)** |  |
+| **[dsh-emergency-plan](https://github.com/PerryLink/dsh-emergency-plan)** |  |
+| **[dsh-essay-rubric-check](https://github.com/PerryLink/dsh-essay-rubric-check)** |  |
+| **[dsh-evidence-check](https://github.com/PerryLink/dsh-evidence-check)** |  |
+| **[dsh-export-ctl-check](https://github.com/PerryLink/dsh-export-ctl-check)** |  |
+| **[dsh-fast](https://github.com/PerryLink/dsh-fast)** |  |
+| **[dsh-fmea-table-check](https://github.com/PerryLink/dsh-fmea-table-check)** |  |
+| **[dsh-forecast-penalty](https://github.com/PerryLink/dsh-forecast-penalty)** |  |
+| **[dsh-fund-research](https://github.com/PerryLink/dsh-fund-research)** |  |
+| **[dsh-github](https://github.com/PerryLink/dsh-github)** |  |
+| **[dsh-gongwen-flow-check](https://github.com/PerryLink/dsh-gongwen-flow-check)** |  |
+| **[dsh-gongwen-word-check](https://github.com/PerryLink/dsh-gongwen-word-check)** |  |
+| **[dsh-guard-plan-qc](https://github.com/PerryLink/dsh-guard-plan-qc)** |  |
+| **[dsh-hazchem-check](https://github.com/PerryLink/dsh-hazchem-check)** |  |
+| **[dsh-hazplan-check](https://github.com/PerryLink/dsh-hazplan-check)** |  |
+| **[dsh-hidden-risk-map](https://github.com/PerryLink/dsh-hidden-risk-map)** |  |
+| **[dsh-hs-classify](https://github.com/PerryLink/dsh-hs-classify)** |  |
+| **[dsh-icd-rule-check](https://github.com/PerryLink/dsh-icd-rule-check)** |  |
+| **[dsh-industry-research](https://github.com/PerryLink/dsh-industry-research)** |  |
+| **[dsh-lawcite-adapter](https://github.com/PerryLink/dsh-lawcite-adapter)** |  |
+| **[dsh-laya](https://github.com/PerryLink/dsh-laya)** |  |
+| **[dsh-lc-doc-check](https://github.com/PerryLink/dsh-lc-doc-check)** |  |
+| **[dsh-learning-gap-check](https://github.com/PerryLink/dsh-learning-gap-check)** |  |
+| **[dsh-library](https://github.com/PerryLink/dsh-library)** |  |
+| **[dsh-local-ai](https://github.com/PerryLink/dsh-local-ai)** |  |
+| **[dsh-lsp-actions](https://github.com/PerryLink/dsh-lsp-actions)** |  |
+| **[dsh-mask](https://github.com/PerryLink/dsh-mask)** |  |
+| **[dsh-mcp-panel](https://github.com/PerryLink/dsh-mcp-panel)** |  |
+| **[dsh-medrec-qc](https://github.com/PerryLink/dsh-medrec-qc)** |  |
+| **[dsh-memento](https://github.com/PerryLink/dsh-memento)** |  |
+| **[dsh-nsfc-form-check](https://github.com/PerryLink/dsh-nsfc-form-check)** |  |
+| **[dsh-nurse-record-check](https://github.com/PerryLink/dsh-nurse-record-check)** |  |
+| **[dsh-observe](https://github.com/PerryLink/dsh-observe)** |  |
+| **[dsh-origin-rvc-check](https://github.com/PerryLink/dsh-origin-rvc-check)** |  |
+| **[dsh-ota-review-check](https://github.com/PerryLink/dsh-ota-review-check)** |  |
+| **[dsh-output-styles](https://github.com/PerryLink/dsh-output-styles)** |  |
+| **[dsh-paper-doc-adapter](https://github.com/PerryLink/dsh-paper-doc-adapter)** |  |
+| **[dsh-permission-rules](https://github.com/PerryLink/dsh-permission-rules)** |  |
+| **[dsh-permit-report-check](https://github.com/PerryLink/dsh-permit-report-check)** |  |
+| **[dsh-pipeline-check](https://github.com/PerryLink/dsh-pipeline-check)** |  |
+| **[dsh-pleading-draft](https://github.com/PerryLink/dsh-pleading-draft)** |  |
+| **[dsh-plugin-doctor](https://github.com/PerryLink/dsh-plugin-doctor)** |  |
+| **[dsh-plugin-guide](https://github.com/PerryLink/dsh-plugin-guide)** |  |
+| **[dsh-plugin-kit](https://github.com/PerryLink/dsh-plugin-kit)** |  |
+| **[dsh-plugin-upgrade](https://github.com/PerryLink/dsh-plugin-upgrade)** |  |
+| **[dsh-policy-brief-draft](https://github.com/PerryLink/dsh-policy-brief-draft)** |  |
+| **[dsh-power-loss-split](https://github.com/PerryLink/dsh-power-loss-split)** |  |
+| **[dsh-power-ticket-check](https://github.com/PerryLink/dsh-power-ticket-check)** |  |
+| **[dsh-ppap-check](https://github.com/PerryLink/dsh-ppap-check)** |  |
+| **[dsh-protest-deadline](https://github.com/PerryLink/dsh-protest-deadline)** |  |
+| **[dsh-railway-window](https://github.com/PerryLink/dsh-railway-window)** |  |
+| **[dsh-repair-order-qc](https://github.com/PerryLink/dsh-repair-order-qc)** |  |
+| **[dsh-research-report](https://github.com/PerryLink/dsh-research-report)** |  |
+| **[dsh-review-reply-check](https://github.com/PerryLink/dsh-review-reply-check)** |  |
+| **[dsh-rulefile-check](https://github.com/PerryLink/dsh-rulefile-check)** |  |
+| **[dsh-safety-brief-check](https://github.com/PerryLink/dsh-safety-brief-check)** |  |
+| **[dsh-score](https://github.com/PerryLink/dsh-score)** |  |
+| **[dsh-session-sync](https://github.com/PerryLink/dsh-session-sync)** |  |
+| **[dsh-site-log-check](https://github.com/PerryLink/dsh-site-log-check)** |  |
+| **[dsh-skill-pack-security](https://github.com/PerryLink/dsh-skill-pack-security)** |  |
+| **[dsh-soe-decision-check](https://github.com/PerryLink/dsh-soe-decision-check)** |  |
+| **[dsh-soilwater-check](https://github.com/PerryLink/dsh-soilwater-check)** |  |
+| **[dsh-sop-sync-check](https://github.com/PerryLink/dsh-sop-sync-check)** |  |
+| **[dsh-spc-gbt-adapter](https://github.com/PerryLink/dsh-spc-gbt-adapter)** |  |
+| **[dsh-talk](https://github.com/PerryLink/dsh-talk)** |  |
+| **[dsh-tender-extract](https://github.com/PerryLink/dsh-tender-extract)** |  |
+| **[dsh-tender-matrix](https://github.com/PerryLink/dsh-tender-matrix)** |  |
+| **[dsh-test-drive](https://github.com/PerryLink/dsh-test-drive)** |  |
+| **[dsh-ticktick](https://github.com/PerryLink/dsh-ticktick)** |  |
+| **[dsh-translate](https://github.com/PerryLink/dsh-translate)** |  |
+| **[dsh-warranty-calc](https://github.com/PerryLink/dsh-warranty-calc)** |  |
+| **[dsh-budget](https://github.com/PerryLink/dsh-budget)** | 🧊 CONGELADO — ver o README do repositório |
+| **[dsh-claude-move](https://github.com/PerryLink/dsh-claude-move)** | 🧊 CONGELADO — ver o README do repositório |
+| **[dsh-defend](https://github.com/PerryLink/dsh-defend)** | 🧊 CONGELADO — ver o README do repositório |
+| **[dsh-draw](https://github.com/PerryLink/dsh-draw)** | 🧊 CONGELADO — ver o README do repositório |
+| **[dsh-reach](https://github.com/PerryLink/dsh-reach)** | 🧊 CONGELADO — ver o README do repositório |
+| **[dsh-background-agents](https://github.com/PerryLink/dsh-background-agents)** | 🚫 RETIRADO — ver o README do repositório |
+| **[dsh-session-pin](https://github.com/PerryLink/dsh-session-pin)** | 🚫 RETIRADO — ver o README do repositório |
+| **[dsh-team-rooms](https://github.com/PerryLink/dsh-team-rooms)** | 🚫 RETIRADO — ver o README do repositório |
+
+</details>
+
+## License
+
+[Apache License 2.0](LICENSE) © 2026 dsh-defend contributors
+
+### Instalar a partir do mercado do DSH Desktop
+
+Todos os plugins PerryLink podem ser explorados no mercado integrado do DSH Desktop: **Market → Sources → add source → colar** `https://perrylink-dsh-catalog.perrylink.workers.dev/catalog-source.json` **→ selecionar**. A instalação continua passando pela verificação de identidade npm do mercado e pela sua confirmação.

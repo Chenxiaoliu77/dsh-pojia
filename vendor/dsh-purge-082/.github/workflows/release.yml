@@ -1,0 +1,162 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'dongliuwuzhong-arch/DSH-purge'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # actions/checkout@v4 默认不拉 tag。不拉的话下面
+          # `git rev-parse refs/tags/vX.Y.Z` 永远为假，永远走 --target 那条路。
+          fetch-tags: true
+
+      - name: Syntax-check plugin entry
+        # 逐个文件列名字会漏：新加的 lib/*.js 不写进来就等于没检查。
+        # 改成扫全量，保证 lib/ 与 bin/ 下每个文件都被 --check 过。
+        run: |
+          # 每步都往 STEP_SUMMARY 写一行：失败时在 Summary 页就能看到跑到哪了，
+          # 不用点进 job 展开日志（1.2.1 排查 CI 时就是卡在这一步看不见）。
+          mark() { echo "- [x] $1" >> "$GITHUB_STEP_SUMMARY"; }
+          fail() { echo "- [ ] **$1**" >> "$GITHUB_STEP_SUMMARY"; echo "::error::$1"; exit 1; }
+          echo '## 门禁进度' >> "$GITHUB_STEP_SUMMARY"
+          set -e
+          n=0
+          for f in lib/*.js lib/*.mjs bin/*.js client.js; do
+            node --check "$f" || fail "node --check 失败: $f"
+            n=$((n+1))
+          done
+          mark "语法检查 $n 个文件"
+          node --check scripts/assert-patches.mjs || fail "node --check assert-patches.mjs"
+          node --check scripts/assert-soul-guard.mjs || fail "node --check assert-soul-guard.mjs"
+          node --input-type=module -e "import './lib/index.js'" || fail "import lib/index.js 失败"
+          mark "import lib/index.js"
+          node scripts/assert-patches.mjs || fail "补丁表自检失败"
+          mark "补丁表自检"
+
+      - name: Unit tests
+        run: |
+          if ! node --test "test/**/*.test.mjs" > gate.log 2>&1; then
+            echo '- [ ] **单元测试失败**' >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -40 gate.log >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat gate.log
+            echo '::error::单元测试失败'
+            exit 1
+          fi
+          tail -6 gate.log
+          echo '- [x] 单元测试' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Soul guard
+        # 破甲不许改灵魂：注入正文与破甲补丁一旦变化，这道门就红。
+        run: |
+          if ! out=$(node scripts/assert-soul-guard.mjs 2>&1); then
+            echo '- [ ] **Soul guard 失败**' >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            echo "$out" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::Soul guard 失败: $out"
+            exit 1
+          fi
+          echo "$out"
+          echo "- [x] Soul guard" >> "$GITHUB_STEP_SUMMARY"
+
+      # Publish 拆成三段具名步骤：以前是一整块 run，失败时 annotation 只指向
+      # 「.github 第 N 行 exit 1」，看不出红在哪一步。拆开后失败会精确落在步骤名上。
+      - name: Publish / resolve version
+        id: ver
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          first="$(head -n 1 release-notes.md | tr -d '\r')"
+          echo "version=$version"
+          echo "first=$first"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "$first" != "# ${version}" ]; then
+            echo "::error::release-notes.md 第一行必须是 # ${version}，现在是: ${first}"
+            exit 1
+          fi
+
+      - name: Publish / build zip
+        run: |
+          set -euo pipefail
+          version="${{ steps.ver.outputs.version }}"
+          zip="dsh-purge-${version}.zip"
+          tag="v${version}"
+          if git rev-parse -q --verify "refs/tags/${tag}^{}" >/dev/null 2>&1; then
+            commit="$(git rev-parse "refs/tags/${tag}^{}")"
+            git archive --format=zip --prefix="dsh-purge-${version}/" --output="$zip" "$commit"
+          else
+            git archive --format=zip --prefix="dsh-purge-${version}/" --output="$zip" HEAD
+          fi
+          test -s "$zip"
+          echo "zip=$(pwd)/$zip  bytes=$(wc -c < "$zip")"
+
+      - name: Publish / create or update release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # set -e 关掉：gh 失败时要先抓 stderr 报出来，不能被 set -e 直接吞掉。
+          set -uo pipefail
+          version="${{ steps.ver.outputs.version }}"
+          tag="v${version}"
+          zip="dsh-purge-${version}.zip"
+
+          # 诊断：这三行会在失败时给出「到底是权限不够还是命令用错」。
+          # 1.2.1 之前的版本只报 exit 1，看不出原因。
+          echo "repo=${{ github.repository }}"
+          echo "token_len=${#GH_TOKEN}"
+          gh auth status 2>&1 | sed 's/^/  auth: /' || true
+
+          report_fail() {
+            echo "::error::$1"
+            {
+              echo "### $1"
+              echo ''
+              echo '```'
+              echo "$2"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            # 已存在也要 edit：1.2.1 首次创建时 --title / --notes-file 没生效，
+            # 结果 release 正文是 tag 指向 commit 的 message、而且一个资产都没有。
+            # 只跳过 create，不跳过修正。
+            echo "release $tag exists; editing title/notes"
+            if ! out=$(gh release edit "$tag" --title "$tag" --notes-file release-notes.md 2>&1); then
+              report_fail "gh release edit 失败" "$out"
+            fi
+            echo "$out"
+          else
+            args=(release create "$tag" --target "$GITHUB_SHA" --title "$tag" --notes-file release-notes.md)
+            case "$version" in
+              *beta*|*alpha*|*rc*) args+=(--prerelease) ;;
+            esac
+            echo "running: gh ${args[*]}"
+            if ! out=$(gh "${args[@]}" 2>&1); then
+              report_fail "gh release create 失败" "$out"
+            fi
+            echo "$out"
+          fi
+
+          if ! out=$(gh release upload "$tag" "$zip" --clobber 2>&1); then
+            report_fail "gh release upload 失败" "$out"
+          fi
+          echo "$out"
+          echo "published https://github.com/${{ github.repository }}/releases/tag/${tag}"

@@ -1,0 +1,386 @@
+<div align="center">
+
+# 🛡️ dsh-defend
+- **1024 स्टोर चैनल**: एक बार `npm i -g dsh1024`, फिर `dsh1024 plugin --profile web add dsh-defend` ([deepseek1024.com](https://deepseek1024.com) इंस्टॉल रैंकिंग में गिना जाता है)।
+
+**DeepSeek Harness के लिए प्रॉम्प्ट-इंजेक्शन, जेलब्रेक और सीक्रेट-लीक सुरक्षा।**
+
+*नियम ज्ञात को तय करते हैं। बाकी को इंटरसेप्शन तय करता है — और सब कुछ ऑडिटेड रहता है।*
+
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Gitee](https://img.shields.io/badge/Gitee-mirror-c71d23?logo=gitee)](https://gitee.com/perrylink/dsh-defend)
+[![DSH plugin](https://img.shields.io/badge/dsh--plugin-✅-green)](https://github.com/topics/dsh-plugin)
+[![dsh-doctor](https://raw.githubusercontent.com/PerryLink/dsh-plugin-doctor/main/badges/PerryLink__dsh-defend.svg)](https://github.com/PerryLink/dsh-plugin-doctor#verified-徽章)
+[![DSH Market](https://raw.githubusercontent.com/2BingLing/dsh-market/master/assets/readme/badge-listed-en.svg)](https://dsh.market/)
+[![Node](https://img.shields.io/badge/node-%5E22.19%20%7C%7C%20%3E%3D24-brightgreen.svg)](#)
+[![CI](https://img.shields.io/github/actions/workflow/status/PerryLink/dsh-defend/ci.yml?branch=main&label=CI)](https://github.com/PerryLink/dsh-defend/actions)
+[![Version](https://img.shields.io/github/v/tag/PerryLink/dsh-defend?label=version)](https://github.com/PerryLink/dsh-defend/releases)
+[![npm version](https://img.shields.io/npm/v/dsh-defend)](https://www.npmjs.com/package/dsh-defend)
+[![npm downloads](https://img.shields.io/npm/dm/dsh-defend)](https://www.npmjs.com/package/dsh-defend)
+[![dshfind](https://dshfind.com/api/badge/PerryLink/dsh-defend?metric=downloads&lang=hi)](https://dshfind.com/hi/plugins/PerryLink/dsh-defend?ref=badge)
+
+[English](README.md) · [简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
+
+```sh
+dsh plugin --profile <name> add dsh-defend
+```
+
+
+</div>
+
+---
+
+
+**📖 इकोसिस्टम नॉलेज बेस** — मापे गए आँकड़े, मार्केटिंग नहीं: [डेवलपमेंट गाइड · चयन डेटा · रखरखाव मानदंड](https://perrylink.github.io/dsh-plugin-guide/)।
+
+<!-- star-cta -->
+
+## इंस्टॉल और अनइंस्टॉल
+
+- **git चैनल** (नवीनतम `main`): `dsh plugin --profile web add github:PerryLink/dsh-defend` — `prepare` स्क्रिप्ट केवल प्रोडक्शन निर्भरताओं से बिल्ड करती है।
+- **npm चैनल** (प्रकाशित रिलीज़): `dsh plugin --profile web add dsh-defend`।
+- **tarball चैनल**: इस रेपो में `pnpm pack`, फिर `dsh plugin --profile web add ./dsh-defend-<version>.tgz`।
+- **अनइंस्टॉल**: `dsh plugin --profile web remove dsh-defend` (या प्रोफ़ाइल पैच से पंक्ति हटाएँ)।
+
+## What is dsh-defend?
+
+DeepSeek Harness के लिए प्रॉम्प्ट-इंजेक्शन, जेलब्रेक और सीक्रेट-लीक सुरक्षा।
+
+नियम ज्ञात को तय करते हैं। बाकी को इंटरसेप्शन तय करता है — और सब कुछ ऑडिटेड रहता है।
+
+![dsh-defend कार्यप्रवाह आरेख: अनुरोध → नीति/समीक्षा → निर्णय।](docs/assets/dsh-defend-flow.svg)
+
+*कार्यप्रवाह: अनुरोध → नीति/समीक्षा → निर्णय। नीचे के उदाहरण वास्तविक कमांड सतह का उपयोग करते हैं।*
+
+
+*वही रन, एनिमेटेड।*
+
+## रखरखाव स्थिति: 🧊 फ़्रीज़
+
+> **2026-10-05 से फ़्रीज़। कोई नई सुविधा नहीं।** यह पैकेज अभी भी काम करता है और **सेवानिवृत्त नहीं है**, पर अब इसमें नई सुविधाओं का काम नहीं होगा; केवल वास्तविक खराबी ठीक की जाएगी।
+
+रखरखावकर्ताओं का मानना है कि इस क्षमता में **अधिक अपनाए गए विकल्प अब मौजूद हैं**, इसलिए प्रयास अन्यत्र स्थानांतरित किया गया। 2026-10-05 को मापी गई तुलना:
+
+| | पैकेज | साप्ताहिक डाउनलोड |
+|---|---|---|
+| **यह पैकेज** | `dsh-defend` | 937 |
+| अधिक अपनाया गया विकल्प | [`cc-safety-net`](https://github.com/kenryu42/cc-safety-net) | **13,087** |
+
+👉 **नए काम के लिए `cc-safety-net` को प्राथमिकता दें।** यह पैकेज अब भी अधिक व्यापक डिटेक्टर है, पर फ़्रीज़ है और इसमें नई सुविधाएँ नहीं जुड़ेंगी। मौजूदा इंस्टॉल बिना किसी बदलाव के काम करते रहेंगे।
+
+*पूर्ण प्रमाण: `dsh-plugin-supersession-review-20261005.md`। पूरा पाठ [README.md](README.md) के **Maintenance status: 🧊 FROZEN** अनुभाग में।*
+
+## ⭐ 如果它帮到了你
+
+यह प्लगइन [DSH प्लगइन परिवार](https://github.com/PerryLink) का हिस्सा है (95 प्लगइन, सभी Apache-2.0)। अगर यह उपयोगी लगे, तो **एक स्टार दें** — इससे कोई सुविधा अनलॉक नहीं होती, पर अगला व्यक्ति इसे खोज में आसानी से पा लेता है।
+
+*English:* part of a 95 plugin family for DeepSeek Harness. If it is useful, **a star helps the next person find it** — nothing is gated behind it.
+
+## Comparison
+
+![dsh-defend का मापा गया तुलना चार्ट](https://raw.githubusercontent.com/PerryLink/dsh-defend/main/docs/assets/dsh-defend-evidence.png)
+
+105 samples (75 positive / 30 negative) · from benchmark/RESULTS.md in this repo
+
+## संगतता
+
+| सतह | स्थिति |
+|---|---|
+| Harness | DeepSeek Harness `dsh-v0.2.1-alpha.1` (2026-09-25 को सत्यापित; peer रेंज `>=0.1.2-rc.1 <0.2.0 \|\| >=0.1.5-alpha.1 <0.2.0 \|\| >=0.1.6-0 <0.2.0 \|\| >=0.1.7-0 <0.2.0`)। इस लाइन पर `Session.append` का तीसरा पैरामीटर केवल सरफ़ेस-योग्य प्रकारों के लिए है और वह `SurfaceIntent` है, इसलिए गैर-सरफ़ेस `defend/detection` अब भी `ignorable` मार्कर स्टैम्प नहीं कर सकता: सत्र-लॉग ऑडिट fail-closed रूप से बंद रहता है और `/defend` वह स्थिति स्पष्ट रूप से दिखाता है। सत्र प्रारूप V4 में `tool-result` कंटेंट ब्लॉक अब नहीं है — यह प्लगइन उसे कभी बनाता नहीं था, और इसके दो कंटेंट वॉकर सेवानिवृत्त V3 रैपर के लिए **केवल-पढ़ने** का फ़ॉलबैक रखते हैं, ताकि अपग्रेड से पहले लिखे गए सत्र अब भी स्कैन हों। 2026-09-25 को सत्यापित (दोहरा typecheck + पूरी टेस्ट सूट + build + self-contained/artifacts गेट + pack; होस्ट टाइप ग्राफ़ की एक ही प्रति)। |
+| Node | `^22.19.0 \|\| >=24.0.0` |
+| प्लेटफ़ॉर्म | सभी (केवल host; कोई नेटिव कोड नहीं, कोई नेटवर्क नहीं) |
+| मॉडल | कोई भी (पहचान मॉडल तक सामग्री पहुँचने से पहले होती है) |
+
+## आपको क्या मिलता है
+
+`dsh-defend` एजेंट के सामने दो स्वतंत्र परतें रखता है:
+
+1. **विनाशकारी-डिलीट गार्ड** — 8·14/8·16 पोस्टमॉर्टम सबक का निष्पादन योग्य रूप। `tools/pre-execute` पर, पुनरावर्ती रूप से हटाने वाले शेल कमांड तब तक अस्वीकार होते हैं जब तक **हर** लक्ष्य सत्र कार्यक्षेत्र के भीतर एक स्पष्ट निरपेक्ष पथ न हो और संरक्षित उपसर्गों (होम कॉन्फ़िग, `.dsh`/`.claude`, सिस्टम निर्देशिकाएँ) से बाहर न हो। dry-run चिह्न (`-WhatIf`, `--dry-run`, `git clean -n`) पास होते हैं — वे ठीक वही जाँच हैं जो सबक माँगता है।
+2. **पहचान परत** — चार अपस्ट्रीम परिसंपत्तियों से पोर्टेड (सभी Apache-2.0, देखें THIRD_PARTY_NOTICES.md): 25 Prompt-Injection-Payloads नियम, शुद्ध-TypeScript Aho-Corasick ऑटोमेटन पर 25 Jailbreak-Detector पैटर्न, Secret-Key-Leaker-Detect व जारीकर्ताओं के सार्वजनिक संदर्भों से 12 सीक्रेट व्याकरण, और Prompt-Attack-Dataset को रिग्रेशन बेंचमार्क के रूप में जस का तस रखा गया।
+
+तीन इंटरसेप्शन बिंदु, एक निर्णय मॉडल:
+
+| बिंदु | स्कैन की गई सामग्री | निर्णय |
+|---|---|---|
+| `agent/pre-step` | आवक संदेश | allow → `next()`; ask → स्वीकृति; block → चरण अस्वीकार |
+| `tools/pre-execute` | टूल तर्क | allow → `next()`; ask → स्वीकृति; block → deny |
+| `tools/post-execute` | टूल परिणाम | allow → `next()`; ask → स्वीकृति; block → सुधारात्मक फ़ीडबैक |
+
+डिफ़ॉल्ट: हर परिवार के लिए `ask`, **critical** सीक्रेट के लिए `block` (अपस्ट्रीम की तुरंत-बाधित शैली)। कोई स्वीकृति उत्तरदाता नहीं = fail closed। हर पास-थ्रू `next()` बुलाता है — डाउनस्ट्रीम नीति प्लगइन कभी शॉर्ट-सर्किट नहीं होते।
+
+## त्वरित शुरुआत
+
+```sh
+dsh plugin --profile web add github:PerryLink/dsh-defend
+```
+
+```sh
+# 1. बंडल को अपने प्रोफ़ाइल में इंस्टॉल करें
+dsh plugin --profile web add github:PerryLink/dsh-defend
+
+# या npm से (प्रकाशित रिलीज़)
+dsh plugin --profile web add dsh-defend
+
+# 2. पुनः आरंभ करें और पंक्ति सत्यापित करें
+dsh --profile web --dump-config | grep -A3 'id: dsh-defend'
+```
+
+### उदाहरण
+
+ये वास्तविक प्रवेश बिंदु हैं; इंस्टॉल के बाद एक चलाएँ।
+
+#### विस्तृत उदाहरण
+
+**कमांड**
+
+~~~sh
+defend_report
+~~~
+
+**इनपुट**
+
+~~~json
+{}
+~~~
+
+**आउटपुट**
+
+~~~text
+dsh-defend: 0 recorded detection(s), 0 blocked, 0 asked.
+~~~
+
+*स्रोत `tests/lifecycle.spec.ts:91-126 (canonical empty value at :110-117); src/index.ts:772-775`*
+
+#### विफलता शाखा
+
+**इनपुट**
+
+~~~text
+Remove-Item -Recurse
+~~~
+
+**आउटपुट**
+
+~~~text
+{"kind":"deny","reason":"blocked dangerous recursive delete command (Remove-Item -Recurse): no explicit target path was printed. Dry-run first (Remove-Item -WhatIf / git clean -n / list the directory), verify each target one by one, then retry with an explicit absolute path"}
+~~~
+
+*स्रोत `plugins/dsh-defend/src/index.ts:376-379; plugins/dsh-defend/tests/destructive-delete.spec.ts:68-71; verified via plugins/dsh-defend/lib/index.js`*
+
+#### संक्षिप्त उदाहरण
+
+- `/defend`
+
+## कॉन्फ़िगरेशन
+
+सभी समायोजन Schemastery `Config` फ़ील्ड हैं (cordis.yml से बदले जा सकते हैं)। id-लक्षित ओवरराइड पूरी पंक्ति बदल देता है — ज़रूरत की हर कुंजी फिर से लिखें। `cordis.patch.yml` हर कुंजी को इनलाइन समझाता है।
+
+| कुंजी | डिफ़ॉल्ट | अर्थ |
+|---|---|---|
+| `enabled` | `true` | दोनों परतों का मुख्य स्विच |
+| `action` | `deny` | विनाशकारी-डिलीट गार्ड क्रिया (`deny` / `ask`) |
+| `toolNames` | `['bash','persistent-bash','terminal-bash']` | वे टूल नाम जिनके तर्क गार्ड समीक्षा करता है |
+| `detection.enabled` | `true` | पहचान परत स्विच |
+| `detection.maxScanChars` | `10000` | प्रति इंटरसेप्शन स्कैन सीमा (केवल शीर्ष) |
+| `detection.normalizeUnicode` | `true` | स्कैन से पहले टेक्स्ट को NFKC-सामान्यीकृत करें (lookalike-Unicode बायपास रोकता है) |
+| `detection.secretMinEntropy` | `3.0` | सीक्रेट हिट स्वीकारने हेतु न्यूनतम Shannon एंट्रॉपी (bits/char); `0` अक्षम करता है |
+| `detection.injectionAction` | `ask` | इंजेक्शन परिवार: `allow` / `ask` / `block` |
+| `detection.jailbreakAction` | `ask` | जेलब्रेक परिवार: `allow` / `ask` / `block` |
+| `detection.secretAction` | `ask` | सीक्रेट परिवार: `allow` / `ask` / `block` |
+| `detection.secretBlockCritical` | `true` | critical सीक्रेट `secretAction` की परवाह किए बिना हमेशा block |
+| `detection.audit` | `true` | `defend/detection` सत्र ऑडिट इवेंट लिखें |
+| `detection.allowUnmarkedAudit` | `false` | ऐसे होस्ट पर सत्र ऑडिट लिखना जारी रखें जिनका `Session.append` `ignorable` मार्कर से पुराना है (अब तक की सभी प्रकाशित लाइनें, `0.2.x` प्री-रिलीज़ सहित), अप्राप्य सत्र का जोखिम स्वीकार करते हुए |
+| `detection.maxReportEntries` | `200` | मेमोरी में रिंग-बफ़र सीमा |
+| `registerCommand` | `true` | `/defend` कमांड पंजीकृत करें |
+| `registerTool` | `true` | `defend_report` टूल पंजीकृत करें |
+
+## टूल और सतहें
+
+| सतह | प्रकार | टिप्पणियाँ |
+|---|---|---|
+| `defend_report` | टूल | योग (दर्ज/ब्लॉक/पूछे), प्रति-परिवार गिनती और हाल की 20 पहचान — कभी मिलान टेक्स्ट नहीं |
+| `/defend` | कमांड | वही सारांश टेक्स्ट रूप में |
+| `agent/pre-step` | श्रोता | आवक संदेश स्कैन (enter/reject) |
+| `tools/pre-execute` | श्रोता | तर्क स्कैन (deny/ask) + विनाशकारी-डिलीट गार्ड |
+| `tools/post-execute` | श्रोता | परिणाम स्कैन (block फ़ीडबैक) |
+
+## अनुमतियाँ और डेटा
+
+- **अनुमतियाँ**: `ask` निर्णय आधिकारिक स्वीकृति सीम से जाते हैं; कुछ भी फिर से लागू या बायपास नहीं होता। प्लगइन अपने वर्कशॉप मैनिफ़ेस्ट में `session:append` व `network:none` घोषित करता है।
+- **डेटा**: डिस्क पर कुछ नहीं लिखा जाता; रिपोर्ट रिंग-बफ़र केवल मेमोरी में और सीमित है। कोई नेटवर्क अनुरोध नहीं, कोई सबप्रोसेस नहीं।
+- **सत्र लॉग**: `defend/detection` इवेंट में नियम id, परिवार, श्रेणी, गंभीरता, सीक्रेट प्रकार, निर्णय व स्कैन तथ्य होते हैं — मिलान टेक्स्ट कभी लॉग तक नहीं पहुँचता, और सीक्रेट पहचान निर्माण से ही केवल-प्रकार होती है।
+
+## सुरक्षा सीमाएँ
+
+- **पहचान, प्रवर्तन नहीं।** गार्ड और पहचान परत केवल आधिकारिक सीम पर deny/ask/block निर्णय बनाती हैं; सैंडबॉक्स व स्वीकृति प्रणालियाँ ही प्रवर्तन प्राधिकार हैं।
+- **Fail closed।** स्वीकृति उत्तरदाता, सत्र या सेवा सतह के बिना, सख्ततम निर्णय पर गिरता है — कभी मूक पास-थ्रू नहीं।
+- **कोई सामग्री प्रक्रिया से बाहर नहीं जाती।** स्कैन स्थानीय है; ऑडिट इवेंट सैनिटाइज़्ड हैं; सीक्रेट कभी लॉग, दिखाए या रिपोर्ट नहीं होते।
+- **सीमित कार्य।** स्कैन सीमाएँ, प्रति नियम एक पहचान व रिंग-बफ़र कोटा शत्रुतापूर्ण इनपुट को असीमित संसाधन खाने से रोकते हैं।
+
+## ज्ञात सीमाएँ
+
+- **पहचान अंतराल।** नियम पुस्तकालय पोर्टेड शब्दावली व उनके सहिष्णु रूपों को कवर करता है; नई वाक्यरचना, lookalike-Unicode एन्कोडिंग (NFKC सामान्यीकरण भावी कार्य है) और बहु-चरणीय हमले बच सकते हैं। बेंचमार्क मापा गया आधार (अपस्ट्रीम डेटासेट पर 27/28) टेस्ट में कीलित है ताकि रिग्रेशन दिखे।
+- **मॉडल-स्तर के फ़ैसले नहीं।** `dsh-defend` नियतात्मक है; कभी मॉडल नहीं बुलाता और नई मंशा नहीं आँक सकता।
+- **संदेश अस्वीकृति मूक है।** `agent/pre-step` का reject मॉडल को कारण नहीं देता (सीम में कारण क्षेत्र नहीं); ऑडिट इवेंट नियम तथ्य दर्ज करता है।
+- **सत्र ऑडिट और `ignorable` मार्कर।** ऑडिट ऐपेंड एनवलप के `ignorable: true` मार्कर का अनुरोध करते हैं ताकि कोई भी हार्नेस बिल्ड लॉग लोड कर सके। अब तक की सभी प्रकाशित लाइनें (`0.1.0-rc.1`–`0.1.0-rc.8`, `0.1.1-rc.1`–`0.1.1-rc.2`, और `0.2` कॉरिडोर — 2026-10-04 को प्रकाशित `0.2.1-alpha.1` के विरुद्ध पुनः सत्यापित, जिसका `append(type, data, ...opts)` विकल्प-बैग से केवल `sourceEventSeqs`/`surfaceOp` पढ़ता है और एनवलप `{ type, seq, time, data }` के रूप में बनाता है) उसे चुपचाप गिरा देती हैं — इवेंट बिना मार्क के लिखा जाता है और कड़े बिल्ड पर सत्र अप्राप्य हो जाता है; होस्ट `0.1.2-rc.1` एनवलप फ़ील्ड को केवल संग्रहीत-लॉग पठन संगतता के लिए रखता है, लेकिन `Session.append` अब भी उसे स्टैम्प नहीं कर सकता और रीड पथ बिना-मार्क वाले अज्ञात घटना प्रकारों को अस्वीकार करता है (`defend/detection` पंजीकृत नहीं है), इसलिए वहाँ लिखना भी सत्र को लोड-अयोग्य बना देता है। इसलिए dsh-defend ऐसे होस्ट को पहले उपयोग पर पहचानता है (पीयर-संस्करण पूर्व-जांच + लौटाए गए एनवलप की जांच) और एक बार की चेतावनी के साथ सत्र-लॉग ऑडिट बंद कर देता है; `0.2.x` **प्री-रिलीज़** ठीक इसी कारण पहले से बिना-मार्क वर्गीकृत हैं, जबकि स्थिर `0.2.x` अब भी ऐपेंड जांच पर निर्भर रहता है। `detection.allowUnmarkedAudit: true` सेट करके दोबारा चालू करें; मौजूदा बिना-मार्क `defend/detection` पंक्तियों के एनवलप में `"ignorable": true` जोड़कर मरम्मत की जा सकती है। देखें [issue #2](https://github.com/PerryLink/dsh-defend/issues/2)।
+
+## विकास
+
+```sh
+pnpm install        # node ^22.19 || >=24
+pnpm run typecheck  # tsc: src + tests स्थानीय हार्नेस चेकआउट के विरुद्ध
+pnpm run typecheck:ci  # tsc प्रकाशित 0.1.7-rc.2 प्रकारों के विरुद्ध (बिना paths)
+pnpm test           # vitest: 97 टेस्ट, 9 सुइट (पहचान बेंचमार्क सहित)
+pnpm run build      # tsdown बंडल + tsc घोषणाएँ (lib/)
+pnpm run verify:self-contained  # निर्भरता स्पेक registry से हल होती हैं
+pnpm run verify:artifacts       # निर्मित ESM फ़ेस + प्रकाशित फ़ाइलें मौजूद
+pnpm pack           # प्रकाशित tarball
+```
+
+### Benchmark
+
+रेड-टीम बेंचमार्क (105 नमूनों पर प्रति-श्रेणी P/R/F1 + 27/28 fixture फ़्लोर) [`benchmark/RESULTS.md`](benchmark/RESULTS.md) में है; `node --experimental-strip-types benchmark/run.mjs` से दोबारा बनाएँ (कोई नई निर्भरता नहीं, कोई build नहीं)।
+
+## अन्य DSH प्लगइनों के साथ अंतर-संचालनीयता
+
+**DSH `0.2.0-rc.2`** (वह रनटाइम जिसके लिए यह README प्रकाशित है) और 2026-10-05 को सर्वे किए गए उच्च-स्टार प्लगइन सेट के विरुद्ध सत्यापित।
+
+यह प्लगइन अन्य प्लगइनों में **हस्तक्षेप नहीं करता**, उन उच्च-स्टार प्लगइनों सहित जो व्यापक रूप से इंस्टॉल हैं:
+
+- **कोई टूल-नाम टकराव नहीं।** सभी टूल नेमस्पेस युक्त हैं; कोई भी ऐसा नंगा नाम नहीं लेता जो पहले से किसी अंतर्निहित टूल या अन्य प्लगइन का हो।
+- **कोई सर्विस-की टकराव नहीं।** यह कोई सर्विस key प्रदान नहीं करता, इसलिए टकराव संभव नहीं।
+- **कोई स्लॉट टकराव नहीं।** यह कोई क्लाइंट slot key पंजीकृत नहीं करता, इसलिए `shadows-shipped-ui` सीट के लिए प्रतिस्पर्धा नहीं करता।
+- **कोई HTTP रूट टकराव नहीं।** यह कोई `webServer` प्रीफ़िक्स पंजीकृत नहीं करता।
+- **कोई patch-लेयर टकराव नहीं।** बंडल patch केवल अपनी पंक्ति `insert` करता है; कभी किसी अंतर्निहित पंक्ति का `config` ओवरराइड नहीं करता।
+- **कोई वैश्विक परिवर्तन नहीं।** यह प्रोटोटाइप नहीं बदलता, `process.env` नहीं लिखता, और वैश्विक fetch dispatcher प्रतिस्थापित नहीं करता।
+
+**साझा ईवेंट लिसनर रचना से ही अहस्तक्षेपी हैं।** यह क्रम-संवेदनशील ईवेंट `agent/pre-step`, `tools/post-execute`, `tools/pre-execute` को `ctx.on()` से देखता है — Cordis का **ब्रॉडकास्ट** पंजीकरण, जहाँ हर लिसनर चलता है और कोई किसी दूसरे को वंचित नहीं कर सकता। **यहाँ प्रत्येक लिसनर `next()` से डेलिगेट करता है**, इसलिए श्रृंखला कभी शॉर्ट-सर्किट नहीं होती:
+  - `agent/pre-step` — also used by `dsh-routing-suite` (7000★, 7 listeners), `modlens` (4122★), `dsh-purge` (3317★), `dsh-agent-teams` (1923★), `dsh-context` (1849★).
+  - `tools/post-execute` — also used by `cc-safety-net` (1576★).
+  - `tools/pre-execute` — also used by `cc-safety-net` (1576★).
+
+स्थैतिक प्रमाण: इस रिपॉज़िटरी पर `dsh-plugin-doctor` के K10–K13 सभी `pass` हैं।
+
+## Topics
+
+`dsh`, `dsh-plugin`, `deepseek-harness`, `deepseek`, `cordis`, `security`, `prompt-injection`, `jailbreak`, `secret-scanning`, `ai-safety`
+
+## Contributors
+
+- [@PerryLink](https://github.com/PerryLink) — निर्माता और मेंटेनर: विनाशकारी-डिलीट गार्ड, चार-परिसंपत्ति पहचान पोर्ट, इंटरसेप्शन वायरिंग, ऑडिट सतह और पाँच-भाषा दस्तावेज़।
+- [@cuohua](https://github.com/cuohua) — बिना मार्क के लिखे गए `defend/detection` इवेंट से कड़े बिल्ड पर सत्र अप्राप्य होने की सटीक रिपोर्ट ([#2](https://github.com/PerryLink/dsh-defend/issues/2)); runtime होस्ट-क्षमता पहचान और `ignorable` मार्कर अनुशासन सीधे उसी विश्लेषण से निकले हैं।
+
+## PerryLink DSH Plugin Family
+
+यह प्रोजेक्ट [PerryLink](https://github.com/PerryLink) के DeepSeek Harness प्लगइन परिवार का हिस्सा है। पूरी सूची नीचे संक्षिप्त रखी गई है ताकि हर README की पहली स्क्रीन छोटी रहे; हर पंक्ति और उसकी स्थिति देखने के लिए इसे खोलें।
+
+<details>
+<summary>सभी प्लगइन खोलें</summary>
+
+| प्लगइन | स्थिति |
+|---|---|
+| **[dsh-aqua-input-check](https://github.com/PerryLink/dsh-aqua-input-check)** |  |
+| **[dsh-archive-check](https://github.com/PerryLink/dsh-archive-check)** |  |
+| **[dsh-auto-review](https://github.com/PerryLink/dsh-auto-review)** |  |
+| **[dsh-autotier](https://github.com/PerryLink/dsh-autotier)** |  |
+| **[dsh-bid-ca-precheck](https://github.com/PerryLink/dsh-bid-ca-precheck)** |  |
+| **[dsh-bid-qual-check](https://github.com/PerryLink/dsh-bid-qual-check)** |  |
+| **[dsh-cert-mcp](https://github.com/PerryLink/dsh-cert-mcp)** |  |
+| **[dsh-checkpoint-rewind](https://github.com/PerryLink/dsh-checkpoint-rewind)** |  |
+| **[dsh-click](https://github.com/PerryLink/dsh-click)** |  |
+| **[dsh-composer-history](https://github.com/PerryLink/dsh-composer-history)** |  |
+| **[dsh-contract-stance](https://github.com/PerryLink/dsh-contract-stance)** |  |
+| **[dsh-customs-doc-check](https://github.com/PerryLink/dsh-customs-doc-check)** |  |
+| **[dsh-data-quality](https://github.com/PerryLink/dsh-data-quality)** |  |
+| **[dsh-demurrage-ledger](https://github.com/PerryLink/dsh-demurrage-ledger)** |  |
+| **[dsh-doublecheck](https://github.com/PerryLink/dsh-doublecheck)** |  |
+| **[dsh-drill-script-check](https://github.com/PerryLink/dsh-drill-script-check)** |  |
+| **[dsh-eia-guide-check](https://github.com/PerryLink/dsh-eia-guide-check)** |  |
+| **[dsh-emergency-plan](https://github.com/PerryLink/dsh-emergency-plan)** |  |
+| **[dsh-essay-rubric-check](https://github.com/PerryLink/dsh-essay-rubric-check)** |  |
+| **[dsh-evidence-check](https://github.com/PerryLink/dsh-evidence-check)** |  |
+| **[dsh-export-ctl-check](https://github.com/PerryLink/dsh-export-ctl-check)** |  |
+| **[dsh-fast](https://github.com/PerryLink/dsh-fast)** |  |
+| **[dsh-fmea-table-check](https://github.com/PerryLink/dsh-fmea-table-check)** |  |
+| **[dsh-forecast-penalty](https://github.com/PerryLink/dsh-forecast-penalty)** |  |
+| **[dsh-fund-research](https://github.com/PerryLink/dsh-fund-research)** |  |
+| **[dsh-github](https://github.com/PerryLink/dsh-github)** |  |
+| **[dsh-gongwen-flow-check](https://github.com/PerryLink/dsh-gongwen-flow-check)** |  |
+| **[dsh-gongwen-word-check](https://github.com/PerryLink/dsh-gongwen-word-check)** |  |
+| **[dsh-guard-plan-qc](https://github.com/PerryLink/dsh-guard-plan-qc)** |  |
+| **[dsh-hazchem-check](https://github.com/PerryLink/dsh-hazchem-check)** |  |
+| **[dsh-hazplan-check](https://github.com/PerryLink/dsh-hazplan-check)** |  |
+| **[dsh-hidden-risk-map](https://github.com/PerryLink/dsh-hidden-risk-map)** |  |
+| **[dsh-hs-classify](https://github.com/PerryLink/dsh-hs-classify)** |  |
+| **[dsh-icd-rule-check](https://github.com/PerryLink/dsh-icd-rule-check)** |  |
+| **[dsh-industry-research](https://github.com/PerryLink/dsh-industry-research)** |  |
+| **[dsh-lawcite-adapter](https://github.com/PerryLink/dsh-lawcite-adapter)** |  |
+| **[dsh-laya](https://github.com/PerryLink/dsh-laya)** |  |
+| **[dsh-lc-doc-check](https://github.com/PerryLink/dsh-lc-doc-check)** |  |
+| **[dsh-learning-gap-check](https://github.com/PerryLink/dsh-learning-gap-check)** |  |
+| **[dsh-library](https://github.com/PerryLink/dsh-library)** |  |
+| **[dsh-local-ai](https://github.com/PerryLink/dsh-local-ai)** |  |
+| **[dsh-lsp-actions](https://github.com/PerryLink/dsh-lsp-actions)** |  |
+| **[dsh-mask](https://github.com/PerryLink/dsh-mask)** |  |
+| **[dsh-mcp-panel](https://github.com/PerryLink/dsh-mcp-panel)** |  |
+| **[dsh-medrec-qc](https://github.com/PerryLink/dsh-medrec-qc)** |  |
+| **[dsh-memento](https://github.com/PerryLink/dsh-memento)** |  |
+| **[dsh-nsfc-form-check](https://github.com/PerryLink/dsh-nsfc-form-check)** |  |
+| **[dsh-nurse-record-check](https://github.com/PerryLink/dsh-nurse-record-check)** |  |
+| **[dsh-observe](https://github.com/PerryLink/dsh-observe)** |  |
+| **[dsh-origin-rvc-check](https://github.com/PerryLink/dsh-origin-rvc-check)** |  |
+| **[dsh-ota-review-check](https://github.com/PerryLink/dsh-ota-review-check)** |  |
+| **[dsh-output-styles](https://github.com/PerryLink/dsh-output-styles)** |  |
+| **[dsh-paper-doc-adapter](https://github.com/PerryLink/dsh-paper-doc-adapter)** |  |
+| **[dsh-permission-rules](https://github.com/PerryLink/dsh-permission-rules)** |  |
+| **[dsh-permit-report-check](https://github.com/PerryLink/dsh-permit-report-check)** |  |
+| **[dsh-pipeline-check](https://github.com/PerryLink/dsh-pipeline-check)** |  |
+| **[dsh-pleading-draft](https://github.com/PerryLink/dsh-pleading-draft)** |  |
+| **[dsh-plugin-doctor](https://github.com/PerryLink/dsh-plugin-doctor)** |  |
+| **[dsh-plugin-guide](https://github.com/PerryLink/dsh-plugin-guide)** |  |
+| **[dsh-plugin-kit](https://github.com/PerryLink/dsh-plugin-kit)** |  |
+| **[dsh-plugin-upgrade](https://github.com/PerryLink/dsh-plugin-upgrade)** |  |
+| **[dsh-policy-brief-draft](https://github.com/PerryLink/dsh-policy-brief-draft)** |  |
+| **[dsh-power-loss-split](https://github.com/PerryLink/dsh-power-loss-split)** |  |
+| **[dsh-power-ticket-check](https://github.com/PerryLink/dsh-power-ticket-check)** |  |
+| **[dsh-ppap-check](https://github.com/PerryLink/dsh-ppap-check)** |  |
+| **[dsh-protest-deadline](https://github.com/PerryLink/dsh-protest-deadline)** |  |
+| **[dsh-railway-window](https://github.com/PerryLink/dsh-railway-window)** |  |
+| **[dsh-repair-order-qc](https://github.com/PerryLink/dsh-repair-order-qc)** |  |
+| **[dsh-research-report](https://github.com/PerryLink/dsh-research-report)** |  |
+| **[dsh-review-reply-check](https://github.com/PerryLink/dsh-review-reply-check)** |  |
+| **[dsh-rulefile-check](https://github.com/PerryLink/dsh-rulefile-check)** |  |
+| **[dsh-safety-brief-check](https://github.com/PerryLink/dsh-safety-brief-check)** |  |
+| **[dsh-score](https://github.com/PerryLink/dsh-score)** |  |
+| **[dsh-session-sync](https://github.com/PerryLink/dsh-session-sync)** |  |
+| **[dsh-site-log-check](https://github.com/PerryLink/dsh-site-log-check)** |  |
+| **[dsh-skill-pack-security](https://github.com/PerryLink/dsh-skill-pack-security)** |  |
+| **[dsh-soe-decision-check](https://github.com/PerryLink/dsh-soe-decision-check)** |  |
+| **[dsh-soilwater-check](https://github.com/PerryLink/dsh-soilwater-check)** |  |
+| **[dsh-sop-sync-check](https://github.com/PerryLink/dsh-sop-sync-check)** |  |
+| **[dsh-spc-gbt-adapter](https://github.com/PerryLink/dsh-spc-gbt-adapter)** |  |
+| **[dsh-talk](https://github.com/PerryLink/dsh-talk)** |  |
+| **[dsh-tender-extract](https://github.com/PerryLink/dsh-tender-extract)** |  |
+| **[dsh-tender-matrix](https://github.com/PerryLink/dsh-tender-matrix)** |  |
+| **[dsh-test-drive](https://github.com/PerryLink/dsh-test-drive)** |  |
+| **[dsh-ticktick](https://github.com/PerryLink/dsh-ticktick)** |  |
+| **[dsh-translate](https://github.com/PerryLink/dsh-translate)** |  |
+| **[dsh-warranty-calc](https://github.com/PerryLink/dsh-warranty-calc)** |  |
+| **[dsh-budget](https://github.com/PerryLink/dsh-budget)** | 🧊 फ़्रोज़न — रिपॉज़िटरी README देखें |
+| **[dsh-claude-move](https://github.com/PerryLink/dsh-claude-move)** | 🧊 फ़्रोज़न — रिपॉज़िटरी README देखें |
+| **[dsh-defend](https://github.com/PerryLink/dsh-defend)** | 🧊 फ़्रोज़न — रिपॉज़िटरी README देखें |
+| **[dsh-draw](https://github.com/PerryLink/dsh-draw)** | 🧊 फ़्रोज़न — रिपॉज़िटरी README देखें |
+| **[dsh-reach](https://github.com/PerryLink/dsh-reach)** | 🧊 फ़्रोज़न — रिपॉज़िटरी README देखें |
+| **[dsh-background-agents](https://github.com/PerryLink/dsh-background-agents)** | 🚫 सेवानिवृत्त — रिपॉज़िटरी README देखें |
+| **[dsh-session-pin](https://github.com/PerryLink/dsh-session-pin)** | 🚫 सेवानिवृत्त — रिपॉज़िटरी README देखें |
+| **[dsh-team-rooms](https://github.com/PerryLink/dsh-team-rooms)** | 🚫 सेवानिवृत्त — रिपॉज़िटरी README देखें |
+
+</details>
+
+## License
+
+[Apache License 2.0](LICENSE) © 2026 dsh-defend contributors
+
+### DSH Desktop मार्केट से इंस्टॉल करें
+
+सभी PerryLink प्लगइन DSH Desktop के बिल्ट-इन मार्केट में देखे जा सकते हैं: **Market → Sources → add source → पेस्ट करें** `https://perrylink-dsh-catalog.perrylink.workers.dev/catalog-source.json` **→ चुनें**। इंस्टॉलेशन मार्केट के npm-identity सत्यापन और आपकी पुष्टि से ही होता है।

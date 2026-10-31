@@ -1,0 +1,102 @@
+{
+  "name": "@xqpsec/dsh-jailbreak",
+  "version": "1.3.4",
+  "private": false,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "description": "DeepSeek Harness 鐮寸敳鎻掍欢 dsh-jailbreak锛氫緵搴斿晢渚у彈鎺ф彁绀鸿瘝鍙樻崲锛坰eed-prim 鎵ц鎬佺瀛愶紝鍏?20 绫伙級锛屽崟鍙?ASR鈮?0%銆乷bserved 鐩爣瑕嗙洊 95%銆佽壇鎬ц兘鍔涗唬浠?0.0pt锛?2 椤瑰瑙傚垽鍒嗭級锛涢粯璁ゅ叧闂€佷竴閿紑鍏炽€乷ff 閫愬瓧閫忎紶銆乵anifest+promptSha256 鍏ㄧ▼鍙璁°€侸ailbreak / LLM red-team / prompt-eval toolkit for DeepSeek Harness.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "dsh-plugins",
+    "deepseek-harness",
+    "deepseek",
+    "cordis",
+    "jailbreak",
+    "dsh-jailbreak",
+    "jailbreak",
+    "prompt-injection",
+    "prompt-engineering",
+    "refusal-reduction",
+    "prompt-eval",
+    "chain-of-thought",
+    "aecot",
+    "llm-security",
+    "ai-security",
+    "red-team",
+    "adversarial",
+    "refusal-benchmark",
+    "reverse-engineering",
+    "malware-analysis",
+    "ctf",
+    "security-research",
+    "agent",
+    "鐮寸敳",
+    "瓒婄嫳璇勬祴",
+    "绾㈤槦"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "dshTarget": "0.2.1-rc.2",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./lib/*": "./lib/*",
+    "./bin": "./bin/aecot.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "gate.json",
+    "scope.txt",
+    "icon.svg",
+    "SCOPE.md",
+    "CHANGELOG.md",
+    "LICENSE-GATE",
+    "LICENSE-COMMERCIAL.md",
+    "NOTICE",
+    "lib",
+    "bin",
+    "locale",
+    "docs",
+    "eval"
+  ],
+  "bin": {
+    "aecot": "./bin/aecot.js",
+    "jailbreak": "./bin/aecot.js"
+  },
+  "scripts": {
+    "test": "node --test test/engine.test.js test/plugin.test.js test/hub.test.js test/command.test.js test/render.test.js test/profile.test.js test/arm.test.js test/policy.test.js test/live.test.js test/gate.test.js test/hcot.test.js test/refusal.test.js test/endpoint.test.js test/anthropic.test.js test/presets.test.js test/doctor.test.js test/client.test.js test/reframe.test.js",
+    "gate": "node bin/aecot.js gate",
+    "aecot": "node bin/aecot.js"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xqpsec/dsh-jailbreak.git"
+  },
+  "homepage": "https://github.com/xqpsec/dsh-jailbreak#readme",
+  "bugs": {
+    "url": "https://github.com/xqpsec/dsh-jailbreak/issues"
+  },
+  "author": "xqpsec",
+  "contributors": [],
+  "publishConfig": {
+    "access": "public"
+  }
+}

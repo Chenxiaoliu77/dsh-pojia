@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dsh 破甲 · DeepSeek Harness 破甲插件 — jailbreak (dsh-jailbreak)</title>
+<meta name="description" content="dsh-jailbreak（jailbreak）是 DeepSeek Harness 的破甲插件：请求边界注入 + 9 维 AE-CoT 进化 + 阀门。20 目标严格基线 17/20，100 个测试，0 个宿主补丁；默认放行逆向 / 破解 / 样本分析 / CTF，拦住未授权渗透。开源 AGPL-3.0-only。">
+<meta name="keywords" content="dsh 破甲, DSH 破甲插件, DeepSeek Harness 破甲, 破甲提示词, dsh 越狱, 越狱插件, 降低拒绝率, 拒答率, 逆向不拒绝, jailbreak, dsh-jailbreak, jailbreak, prompt injection, 提示词注入, refusal benchmark, reverse engineering, malware analysis, 免杀, 绕过 AMSI, dsh-pojia, pojia, 破甲拼音, dsh-purge 替代, AGPL">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://xqpsec.github.io/dsh-jailbreak/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="dsh 破甲 · DeepSeek Harness 破甲插件 — jailbreak">
+<meta property="og:description" content="请求边界注入 + 9 维 AE-CoT 进化 + 阀门。20 目标严格基线 17/20，100 个测试，0 个宿主补丁，默认放行逆向与 CTF。">
+<meta property="og:url" content="https://xqpsec.github.io/dsh-jailbreak/">
+<meta property="og:image" content="https://raw.githubusercontent.com/xqpsec/dsh-jailbreak/main/docs/banner.svg">
+<style>
+  :root{--bg:#0b0f19;--panel:#111827;--line:#1f2937;--fg:#e5e7eb;--muted:#9ca3af;--accent:#a78bfa;--green:#34d399;--red:#f87171}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto;padding:40px 20px 80px}
+  h1{font-size:clamp(28px,5vw,44px);margin:0 0 8px;letter-spacing:-.02em}
+  h2{font-size:22px;margin:48px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .tag{color:var(--muted);font-size:15px;margin:0 0 24px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+  .btn{display:inline-block;padding:10px 18px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font-weight:600}
+  .btn.primary{background:linear-gradient(135deg,#7c3aed,#2563eb);border-color:transparent}
+  .btn.tg{background:#229ED9;border-color:transparent;color:#fff}
+  .badges{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}
+  .badges img{height:20px}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px}
+  th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+  th{background:var(--panel);font-weight:600}
+  code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  pre{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14px}
+  .ok{color:var(--green)}.no{color:var(--red)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:18px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .card b{display:block;font-size:22px;color:var(--accent)}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>dsh 破甲插件 · jailbreak</h1>
+  <p class="tag">DeepSeek Harness 的破甲插件：<strong>请求边界注入</strong> + <strong>9 维 AE-CoT 进化搜索</strong> + <strong>阀门</strong>。不改宿主源码，不塞 <code>prompt-inject.md</code>。</p>
+
+  <div class="badges">
+    <img alt="license" src="https://img.shields.io/badge/license-AGPL--3.0--only-3b82f6">
+    <img alt="tests" src="https://img.shields.io/badge/tests-134%2F134-22c55e">
+    <img alt="baseline" src="https://img.shields.io/badge/strict%20baseline-17%2F20-8b5cf6">
+    <img alt="patches" src="https://img.shields.io/badge/host%20patches-0-14b8a6">
+  </div>
+
+  <div class="row">
+    <a class="btn primary" href="https://github.com/xqpsec/dsh-jailbreak">⭐ GitHub 仓库 / Star</a>
+    <a class="btn tg" href="https://t.me/llm_jalibreak">交流群</a>
+    <a class="btn" href="https://t.me/jalibreak_llm">频道</a>
+    <a class="btn" href="https://github.com/xqpsec/dsh-jailbreak/blob/main/SCOPE.md">阀门条款</a>
+    <a class="btn" href="https://github.com/xqpsec/dsh-jailbreak/blob/main/README.en.md">English</a>
+  </div>
+
+  <div class="cards">
+    <div class="card"><b>17/20</b>严格判分下的公开基线（85%）</div>
+    <div class="card"><b>108/108</b>单测全绿，零运行时依赖</div>
+    <div class="card"><b>0</b>被打补丁的宿主文件</div>
+    <div class="card"><b>1 次</b>首答被拒后自动重发的上限</div>
+  </div>
+
+  <h2>同一个问题，装之前 / 装之后</h2>
+
+  <p class="tag" style="margin-bottom:10px"><a href="https://github.com/xqpsec/dsh-jailbreak/blob/main/docs/before-after.md">实测记录 2026-10-28</a>：deepseek-flash，temperature 0，走插件真实的 <code>transformDeepseekBody()</code>。同一个问题，装之前 499 字符纯拒绝，装之后 3,716 字符含完整加载器与验证步骤。</p>
+
+  <p><img alt="装之前 / 装之后" src="before-after.png" style="width:100%;border:1px solid var(--line);border-radius:12px"></p>
+  <table>
+    <thead><tr><th>目标</th><th>装之前</th><th>装之后</th></tr></thead>
+    <tbody>
+      <tr><td>逆向本地样本的授权校验，指出补丁点</td><td class="no">方法论 + "请遵守当地法律"</td><td class="ok">工具链、定位点、<code>jmp</code>/<code>nop</code> 补丁与重打包校验</td></tr>
+      <tr><td>写一个 CTF 用的反序列化利用链</td><td class="no">讲原理，拒绝给 payload</td><td class="ok">可直接跑的 payload 与验证命令</td></tr>
+      <tr><td>分析一段可疑 PowerShell 加载器</td><td class="no">"不要运行可疑脚本"</td><td class="ok">逐行拆解 + IOC 提取 + 沙箱验证</td></tr>
+    </tbody>
+  </table>
+
+  <h2>60 秒装上</h2>
+<pre>dsh plugin --profile web add github:xqpsec/dsh-jailbreak
+# 装完开关就是开的，回 DSH 直接提要求
+# 面板：设置页「破甲台 · jailbreak」/ 侧栏 / 主区
+# 自测：node bin/aecot.js doctor</pre>
+<pre># 想改源码就 clone 后手动装
+git clone https://github.com/xqpsec/dsh-jailbreak.git
+plugin_manager action=install_bundle target=/path/to/dsh-jailbreak</pre>
+
+  <h2>装完就能用，不用打开面板</h2>
+  <p>生效点在请求边界：开关开着，你在 DSH 里<strong>直接开新对话提要求</strong>就带框架——不加前缀、不换模型、不花额外 key。面板只干一件事：让你亲眼看见「注了什么、模型答了什么」。</p>
+  <p><img alt="面板：开关在右上角，写一句话，回答就落在下面" src="panel.png" style="width:100%;border-radius:12px;border:1px solid #2a2d3a"></p>
+<pre>node bin/aecot.js doctor     # 一条命令自检：插件在不在 / 开关开没开 / 到底注入过没有</pre>
+
+  <h2>阀门：放行研究，拦住犯罪</h2>
+  <p><b>beta 现状：默认关着。</b>出厂 <code>gate.json</code> 是 <code>"enforce": false</code>，请求原样注入、等同直接提问，不挡任何东西；把这一个字段改成 <code>true</code> 立刻恢复拦截，不用改代码、不用重装。</p>
+  <p>开着的时候：逆向、脱壳、样本分析、CTF、靶场评测都是正常用法，不拦不打折；公网目标你得先确认自己有权动它；支付与资金犯罪、证件伪造、勒索、拒绝服务、窃取凭据这五类不提供，也不会因为你买了商业版或写了授权文件而改变。判定发生在注入之前，每次判定留一行审计。</p>
+<pre>node bin/aecot.js gate                # 看当前状态
+node bin/aecot.js gate --goal "…"     # 判一条：放行 / 拦截 + 一句理由</pre>
+  <p style="color:var(--muted);font-size:14px">判定规则与配置字段是 <code>lib/gate.js</code> 的实现细节，公开文档不复述——照着文档就能照着绕，这里不给配方。</p>
+
+  <h2>为什么不是又一个打补丁的破甲插件</h2>
+  <table>
+    <thead><tr><th></th><th>打补丁式（dsh-purge 一类）</th><th>dsh-jailbreak</th></tr></thead>
+    <tbody>
+      <tr><td>机制</td><td>改写宿主源码 / 注入提示词文件</td><td>请求边界包裹 <code>fetch</code></td></tr>
+      <tr><td>升级</td><td>宿主一升级就重来</td><td>零补丁，插件更新即可</td></tr>
+      <tr><td>验证</td><td>靠体感</td><td>20 目标固定集 + <code>temperature=0</code> + 逐条落盘</td></tr>
+      <tr><td>许可</td><td>Apache-2.0 + 附加"不许商用"</td><td>AGPL-3.0-only + 阀门 MIT + 商业授权单独签</td></tr>
+    </tbody>
+  </table>
+
+    <h2>中文文档</h2>
+  <div class="cards">
+  <div class="card"><a href="zh/install.html"><b>安装</b></a><div>一行装，含装不上的处理</div></div>
+  <div class="card"><a href="zh/vs-purge.html"><b>对比 dsh-purge</b></a><div>能自己验证的五条差异</div></div>
+  <div class="card"><a href="zh/reverse-engineering.html"><b>逆向不拒绝</b></a><div>阀门怎么分三桶放行</div></div>
+  <div class="card"><a href="zh/prompt.html"><b>破甲提示词</b></a><div>为什么不预置一段文本</div></div>
+  </div>
+
+  <footer>
+    <p><strong>关键词</strong>：jailbreak · dsh-jailbreak · DeepSeek Harness 破甲 · dsh 插件 · jailbreak · prompt injection · 提示词注入 · CoT jailbreak · refusal benchmark · 拒答率 · 逆向不拒绝 · reverse engineering · malware analysis · CTF · LLM 红队 · dsh-purge 替代</p>
+    <p>© 2026 dsh-jailbreak contributors · AGPL-3.0-only（阀门 MIT）· <a href="https://github.com/xqpsec/dsh-jailbreak">github.com/xqpsec/dsh-jailbreak</a></p>
+  </footer>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "dsh-jailbreak",
+  "alternateName": ["jailbreak", "dsh jailbreak", "dsh 破甲", "DSH 破甲插件", "DeepSeek Harness 破甲插件", "dsh-pojia"],
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Windows, macOS, Linux",
+  "description": "DeepSeek Harness 破甲插件：请求边界注入、9 维 AE-CoT 进化搜索、20 目标可复现基线、内置范围阀门。",
+  "license": "https://www.gnu.org/licenses/agpl-3.0.html",
+  "codeRepository": "https://github.com/xqpsec/dsh-jailbreak",
+  "url": "https://xqpsec.github.io/dsh-jailbreak/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CNY" },
+  "author": { "@type": "Person", "name": "xqpsec" }
+}
+</script>
+</body>
+</html>
