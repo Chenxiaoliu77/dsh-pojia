@@ -1,0 +1,54 @@
+dsh-pojia
+Copyright 2026 Chenxiaoliu77
+
+Source: https://github.com/Chenxiaoliu77/dsh-pojia
+
+This product is licensed under the Apache License, Version 2.0.
+Derivative works must retain this NOTICE and attribution.
+
+==>
+
+The research documents, report, and the code under scripts/ in this repository
+are licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The vendor/ directory contains 12 unmodified third-party source samples collected
+for read-only comparative analysis. Each sample keeps its own upstream LICENSE
+file, and those files remain authoritative for the terms applying to each sample.
+The samples are NOT covered by the repository-level Apache-2.0 grant above.
+
+Vendored sample attributions and license terms:
+
+  dsh-purge/          YuJunZhiXue/dsh-purge          Apache-2.0 + NOTICE (retained in sample dir)
+  dsh-purge-plus/     luowang-ui/dsh-purge-plus     MIT
+  dsh-purge-082/      dongliuwuzhong-arch/DSH-purge  MIT
+  dsh-purge-deep/     xxy0722/dsh-purge-deep        MIT
+  dsh-purge-safety/   AspenYoYo/dsh-purge-safety    MIT (as distributed upstream;
+                                                            upstream dsh-purge is Apache-2.0 and the
+                                                            NOTICE was removed upstream -- this sample is
+                                                            retained only as a negative compliance example)
+  dsh-jailbreak/      xqpsec/dsh-jailbreak           AGPL-3.0-only, except lib/gate.js,
+                                                            gate.json and scope.txt which upstream
+                                                            releases under MIT (see LICENSE-GATE in
+                                                            the sample dir)
+  dsh-pojia-mode/     z91772524-ai/dsh-pojia-mode   MIT
+  pojia-dsh/          z91772524-ai/pojia-dsh        MIT
+  dsh-infinite-gen-x/ a137460387/dsh-infinite-gen-x MIT
+  dsh-pojia/          chorus7/dsh-pojia             MIT
+  helm-d/             ADWMC/helm-d                  MIT
+  dsh-defend/         PerryLink/dsh-defend          Apache-2.0
+
+AGPL-3.0 distribution obligations for vendor/dsh-jailbreak:
+
+  This repository distributes an unmodified copy of an AGPL-3.0-only work. Under
+  AGPL-3.0 section 6, recipients receive the license and copyright notice of that
+  work, which are preserved verbatim in vendor/dsh-jailbreak/LICENSE.
+  Under AGPL-3.0 section 13, if a modified version is conveyed, the corresponding
+  source of the modified version must be made available under the same license.
+  The vendored copy here is unmodified; its upstream source is at
+  https://github.com/xqpsec/dsh-jailbreak at the commit recorded in
+  vendor/PROVENANCE.md.
+
+Apache-2.0 section 4(d) obligations for vendor/dsh-purge and vendor/dsh-defend:
+
+  The NOTICE file of the upstream work must be retained in redistribution.
+  vendor/dsh-purge/NOTICE is retained verbatim inside the sample directory.

@@ -27,6 +27,7 @@
 | [DSH-host-defense-layers.md](DSH-host-defense-layers.md) | 宿主侧防御勘察：DSH 的六层防御模型、system prompt 装配顺序、工具权限强制链 | ~33 KB / 457 行 |
 | [DSH-pojia-ecosystem-report.md](DSH-pojia-ecosystem-report.md) | 生态全景盘点：55 仓库全景表、6 类技术路线、8 项风险清单、许可证一致性审计 | ~49 KB / 457 行 |
 | [docs/research/jailbreak-knowledge-base.md](docs/research/jailbreak-knowledge-base.md) | 通用越狱知识底座：手法分类、学术基准、防御共识、合规框架（123 个来源 URL） | ~85 KB / 751 行 |
+| **[docs/破甲提示词生态调研报告.md](docs/破甲提示词生态调研报告.md)** | **生态调研报告**：76 个 GitHub 越狱资源（提示词仓库 / 攻击框架 / 数据集 / 评测防护）的逐个可用性分析、双轴分类框架、三档适用性结论与价值排序清单 | ~51 KB / 670 行 |
 | [vendor/PROVENANCE.md](vendor/PROVENANCE.md) | 12 个样本的 URL / commit SHA / LICENSE / 收录理由 / 已知失效点 | ~5 KB |
 
 ### 主报告的四部分
@@ -87,8 +88,10 @@
 
 ## 使用与再分发
 
-- 主报告为研究文档，可自由引用（引用请指明本仓库与 commit）。
-- **vendor/ 下各子目录遵守其各自 LICENSE**（Apache-2.0 / MIT / AGPL-3.0-only 混合）。Apache-2.0 的 NOTICE 强制保留条款已随样本保留。
+- 本仓库的研究文档、报告与 scripts/ 下的脚本采用 **Apache-2.0**（见 LICENSE），可自由引用（引用请指明本仓库与 commit）。
+- **vendor/ 下各子目录遵守其各自 LICENSE**（Apache-2.0 / MIT / AGPL-3.0-only 混合），与本仓库的 Apache-2.0 是两套独立许可。
+- 顶层 [NOTICE](NOTICE) 汇总了 12 个样本的署名与义务，并逐条写明 AGPL-3.0 第 6/13 条与 Apache-2.0 第 4(d) 条的传递义务。
+- **vendor/ 完整性可复核**：运行 `python scripts/vendor-hash.py --check`（算法与实现同文件，可自证）。
 - 本仓库内容仅用于**安全研究与对照分析**；任何具体行为的合法性须结合授权范围、目标归属与所在法域自行判断，必要时咨询执业律师。
 
 ---

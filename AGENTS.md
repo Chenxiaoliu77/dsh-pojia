@@ -10,6 +10,8 @@
 - **`vendor/` 是样本不是依赖**：不要 `npm install`、不要执行 `postinstall`、不要把其中内容当作运行时依赖引入。
 - **本机宿主不得被改动**：调研期间 DSH `0.2.1-rc.5` 保持原样；任何破甲样本的启用都不在本仓库范围内。
 - **中国法引用须标版本**：网络安全法 2025-10-28 修正后，禁侵条款是**第 29 条**（旧版第 27 条）。
+- **本仓库自身许可与 vendor/ 分离**：本仓库文档与 `scripts/` 走根目录 Apache-2.0（LICENSE + NOTICE）；`vendor/` 内各子目录遵守其上游条款，AGPL-3.0 样本的传递义务见根 NOTICE。
+- **vendor 完整性可复核**：改动 `vendor/` 后必须跑 `python scripts/vendor-hash.py --check`；该脚本同时是算法说明与实现，manifest 不可手改。
 
 ## Agent skills
 
