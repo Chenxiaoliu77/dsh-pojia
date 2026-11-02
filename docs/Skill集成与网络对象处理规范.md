@@ -28,7 +28,9 @@
 
 **一句话**：进程内买**深度**，进程外买**隔离**。助手内核主体走进程内，把「不可信 / 重活」（样本解析、评测跑批）下沉为受管的外部进程。
 
-> 最容易被忽略的一行是最后那条：**进程外意味着宿主的沙箱不再覆盖这段代码**。`dsh-mcp-client` 全文件 837 行里 `sandbox|seatbelt|bwrap|prlimit` 零命中，不是遗漏，是设计上管不到。
+> 最容易被忽略的一行是最后那条：**进程外意味着宿主的沙箱不再覆盖这段代码**。`dsh-mcp-client` 全文件 837 行里 `sandbox|seatbelt|bwrap|prlimit|confine` **四个词全部零命中**，不是遗漏，是设计上管不到。
+
+> 【实测确证】宿主沙箱是「被调用才生效」的能力缝：`dsh-sandbox` 的定位是 `wrap exact subprocess argv`，真正消费它的只有三处——`dsh-bash-sandbox`（`ctx.sandbox.confine([bash,-c,cmd])`，`lib/index.js:162`）、`dsh-ptc-runtime-node`、`dsh-experimental-worktree`。MCP stdio 的 `createTransport` 只传 `command/args/env/cwd` 四个字段，不经过任何 `confine`。详见 §17.6。
 
 ### 0.2 网络对象：三个谓词都不够用
 
@@ -225,7 +227,7 @@ interface CapabilityDescriptor {
 
 | 路径 | 行为 | 后果 |
 |---|---|---|
-| provider 返回坏候选 | `validateCandidate` **直接抛**〔代码确证〕`dsh-skill:452-464`，且调用点在 `provider.list()` 的 try/catch **之外**（对比 `:349-355` 只包住了 `list()`） | **毒化整次目录读取** → 该步整体失败。见 §4.3 第 4 项 |
+| provider 返回坏候选 | `validateCandidate` **直接抛**〔代码确证〕`dsh-skill:452-464`，且调用点在 `provider.list()` 的 try/catch **之外**（对比 `:349-355` 只包住了 `list()`） | **毒化整次目录读取** → pre-step 监听器抛 → **整轮失败**（不是该步）。见 §4.3 第 4 项与 §17.3 |
 | 磁盘上的坏 skill 文件 | warn + 跳过〔代码确证〕`dsh-skill-filesystem:673-698` | 模型只看到「少了一个 skill」，**分不清是缺失还是无效** |
 
 > 这个不对称是集成期最容易踩的坑：你以为「坏一条只丢一条」，实际上**一条坏候选能让整个目录读取抛出去**。所以 provider 必须在返回前自校验。
@@ -640,7 +642,7 @@ function effectiveCapability(assistantTier: "P0"|"P1"|"P2",
 | 1 | skill 名冲突 | 注册期同名抛〔代码确证〕`dsh-skill:101`；候选期同层 warn 后丢弃〔代码确证〕`:319-322` | 注册期：插件激活失败；候选期：**静默**少一个 skill | 助手侧**构建期**静态检查 | 构建期 fail-closed；运行期是静默降级 |
 | 2 | provider 抛错 | `list()` 抛 → 宿主 catch + warn，标记 `cacheable=false`〔代码确证〕`dsh-skill:349-355` | 该 provider 的 skill **全部消失** | 无重试 | 是（跳过而非采用半份） |
 | 3 | 目录收集不完整 | `snapshot()` 返 `complete:false`〔代码确证〕`dsh-skill:234-240` | **什么都不发**，保留上一份可用目录〔代码确证〕`dsh-tool-skill:944` | 下次 pre-step 重试 | 是（last-good） |
-| 4 | **坏候选毒化整次读取** | `validateCandidate` 抛〔代码确证〕`dsh-skill:452-464`，**不在 catch 内**（对比 `:349-355` 只包了 `list()`） | `snapshot()` 抛 → pre-step 监听器抛〔代码确证〕`dsh-tool-skill:935` 无 try/catch → **该步整体失败** | 无 | **fail-closed 但代价过大**；provider 必须返回前自校验 |
+| 4 | **坏候选毒化整次读取** | `validateCandidate` 抛〔代码确证〕`dsh-skill:452-464`，**不在 catch 内**（对比 `:349-355` 只包了 `list()`） | `snapshot()` 抛 → pre-step 监听器抛〔代码确证〕`dsh-tool-skill:932-935` 无 try/catch → waterfall 内部亦无 try〔代码确证〕`cordis:318-325` → 外层 catch 置 `turnEnds={kind:"error"}`〔代码确证〕`dsh-agent-loop:1011-1027` → **整个 turn 终止**（不是该步） | 无 | **fail-closed 但代价过大**；provider 必须返回前自校验 |
 | 5 | invalidate 风暴 | 观测单批 `skills/change` 次数 | 目录反复全量替换，token 线性增长，KV cache 反复失效 | 助手侧 `invalidate()` 必须**去抖 ≥250ms**，且绝不在 `list()`/`get()` 内调 | 是 |
 | 6 | 工具超时 | `tool-call-timeout-policy` 读 `definition.timeoutMs`〔代码确证〕`dsh-tool-call-timeout-policy:93-109`；MCP 侧 `toolCallTimeoutMs` | `Error: tool call timed out after <n>ms` | 不重试；长任务改**异步作业** | 是 |
 | 7 | 宿主版本漂移 | §5.2 三层探活 | 可能「能力整体不可用」而非报错 | 见 §5.2 / §5.3 | 是 |
@@ -815,7 +817,7 @@ scripts/
 | `renderSkillContent` 的 `<skill_content>` 结构 | 中 | 共享渲染器，改形状属破坏性 |
 | `SkillCandidate` 必填字段集 | 中 | 加字段可以，改必填集是破坏性 |
 | frontmatter 键名 | 中 | 已有 `rejectLegacyInvocationKey` 先例 |
-| `skills/change` 事件 | 高 | 消费方靠它 |
+| `skills/change` 事件 | 高 | 同步逐次派发、**无合并窗口**〔实测§17.4〕；且 `skill` 工具本身不订阅，靠 `revision` 失效 |
 | `ctx.tools.register / guard / restrict` | 高 | 全宿主通用 |
 | 注册表分层 | 中 | 与 `ctx.tools` 同构，动它要动半个宿主 |
 
@@ -824,8 +826,11 @@ scripts/
 **三层探活**（每层失败只降级该层）：
 
 ```ts
-// L0：包版本（最弱信号，只用于日志与告警）
-const hostVersion = readHostPackageVersion("@deepseek-ai/dsh-skill");   // 注意 §12 待确认项①
+// L0：宿主版本（只用于日志与告警，不参与判断）—— 权威来源已确证，见 §17.2
+// 读 asar 内的 dsh/desktop-runtime.json → release.version （当前 "0.2.1-rc.5"）
+// 交叉验证：asar 根 /package.json → version / dshBuildCommit
+// 不要用 sharedPackages 里某个包的版本反推：305 个包的版本并不统一
+const hostVersion = readDesktopRuntimeRelease("@deepseek-ai/dsh");
 
 // L1：能力探活（不依赖版本号，靠「调一下看形状」）—— 强信号
 function probe(ctx) {
@@ -1767,22 +1772,171 @@ forbidden:
 
 ---
 
-## 17. 待确认（必须实测才能写进规范）
+## 17. 待确认 → 已确证（2026-11-02 实测回填）
 
-以下是我（和三位分析师）读了但**没能从源码确证**的点，明确列出来而不是猜：
+原表 8 条**全部关闭**。下面是每条的确证结论、证据位置与对规范正文的影响。
 
-| # | 问题 | 影响 | 建议探测 |
+### 17.1 关闭结果总表
+
+| # | 原问题 | 结论（一句话） | 影响 |
 |---|---|---|---|
-| ① | **宿主的统一版本号从哪读？** 全 305 个包搜遍没有 `ctx.version` 一类服务；`dsh/package.json` 在解包产物里不存在 | §5.4 的兼容判定 | 读 `DSH_PROFILE_DIR` 下任一 `@deepseek-ai/dsh-*` 的 `package.json.version`。**不要**用 asar 里某个包的版本反推宿主版本 |
-| ② | `agent/pre-step` 监听器抛错时，宿主是**跳过该监听器**还是**整步失败** | 决定 §4.3-4（坏候选毒化）的严重度 | 写只读探针插件，在 pre-step 里 `throw`，看该轮是否继续 |
-| ③ | `skills/change` 的合并窗口多大 | 决定 §4.3-5 的去抖参数 | provider 里连调 `invalidate()` 100 次，数事件次数 |
-| ④ | `approval: "never"` 时 `tools/pre-execute` 的 `ask` 是否**先**被策略拦下 | 决定 `never` 会话里是否要隐藏能力（§5.5） | 在 `never` 会话里调一个必然 `ask` 的工具 |
-| ⑤ | MCP stdio 子进程**是否继承宿主沙箱** | 决定「进程外必须自己判 P 档」是否足够 | `read-only` 会话里跑 stdio server 写 `/tmp`，看是否成功 |
-| ⑥ | `PreStepDecision.startsRequestSeries` 的语义 | 未确证，**不要据此写规范** | 类型里有〔代码确证〕`api-catalog.js:6425`，但 `agent-loop` 的 `preStep` 里没找到消费点 |
-| ⑦ | 桌面宿主**实际启用了哪几行 cordis 配置** | 影响默认能力集 | 读 `dsh/desktop-runtime.json`（本轮未读） |
-| ⑧ | 「`/name` 手势注入在本步最后」是否可作不变量 | 影响文档措辞 | 它是**注册顺序**（`:896` 先于 `:931`）+ waterfall 语义推出的；规范里应写「由注册顺序决定」，不写「一定最后」 |
+| ① | 宿主统一版本号从哪读 | 读 `dsh/desktop-runtime.json` 的 `release.version`；asar 根 `/package.json` 另有一份可交叉验证 | §5.4 兼容判定改为单一权威来源 |
+| ② | `agent/pre-step` 监听器抛错时如何 | **整轮失败**（不是跳过该监听器，也不是只失败该步） | §4.3-4 严重度上调一级 |
+| ③ | `skills/change` 的合并窗口 | **无窗口**：N 次 `invalidate()` = N 次 emit；且 `skill` 工具根本不订阅该事件 | 去抖必须 provider 侧自做 |
+| ④ | `approval:"never"` 时 `ask` 是否先被拦 | `ask` 判定照常发生；`ApprovalService.decide()` 在**派发 waterfall 之前**直接返回 `rejected` | never 会话不必隐藏能力 |
+| ⑤ | MCP stdio 子进程是否继承宿主沙箱 | **不继承**。沙箱只服务显式调用 `ctx.sandbox.wrap` 的调用方 | 「进程外自判 P 档」由设计选择升级为硬要求 |
+| ⑥ | `PreStepDecision.startsRequestSeries` 语义 | 「本步开启新请求序列的首个请求」；只在 `firstAttempt` 生效 | 原「不得据此写规范」解除 |
+| ⑦ | 桌面宿主实际启用哪几行 cordis 配置 | **不是行列表**，而是 `package.json` 的 `dsh.profile.bundles`（实测 50 条）+ `cordis.patch.yml` | 默认能力集判定改口径 |
+| ⑧ | 「`/name` 手势注入在本步最后」是否可作不变量 | **不是不变量**；由注册顺序决定，`prepend` 可改变 | 措辞改为条件表述 |
 
-**两条已可关闭的**：`catalogDescriptionMaxLength` 的截断单位已确认是 `String.length`（UTF-16 码元，`dsh-tool-skill:1087-1089`）；skill 名字无长度上限（正则是 `dsh-skill:17`，但超长会挤占 token，助手侧自设 ≤48 更稳）。
+### 17.2 ① 宿主版本号：三个来源与权威顺序
+
+〔实测〕三处独立存在的版本号：
+
+| 来源 | 内容 | 位置 |
+|---|---|---|
+| `dsh/desktop-runtime.json` | `release.version = "0.2.1-rc.5"`，另含 `hostProtocolVersion: 4`、`nodeVersion: "24.21.0"`、`pnpmVersion: "11.28.5"` | 文件第 5 行 |
+| asar 根 `/package.json` | `name: "@deepseek-ai/dsh-desktop"`，`version: "0.2.1-rc.5"`，另含 `dshBuildCommit: "d4db512a969fccf0c5cc7ec8fe38e9c1d27af916"`、`dshBuildDirty: false`、`dshDesktopUpdateChannel: "nightly"` | 文件第 4 行 |
+| `desktop-runtime.json` 的 `sharedPackages[]` | 305 个包各自的 `name`+`version`；其中 `@deepseek-ai/dsh` 也是 `0.2.1-rc.5` | 数组内 |
+
+**结论与纠正**：原表①称「`dsh/package.json` 在解包产物里不存在」——**不准确**。它存在于 asar 根 `/package.json`，之前的解包脚本按 `dsh/node_modules/` 前缀过滤才漏掉。
+
+**权威顺序**：`desktop-runtime.json` 的 `release.version` > asar 根 `/package.json` 的 `version` >>> `sharedPackages` 里某个包的版本。
+
+**为什么不能拿包版本反推**：305 个 `sharedPackages` 的版本号**并不统一**——`cordis` 是 `4.0.5`、`cordis-plugin-group` 是 `1.0.5`、`cordis-plugin-include` 是 `1.0.10`、`cordis-plugin-loader` 是 `1.0.6`、`cordis-plugin-timer` 是 `1.1.7`、`cosmokit` 是 `1.8.6`，只有 `dsh-*` 系列跟着宿主走 `0.2.1-rc.5`。
+
+**兼容判定改为**：读 `release.version` → 解析 semver → 与兼容矩阵比对；`release.hostProtocolVersion`（当前 4）单列，它是协议层兼容的判据，与语义版本是两套东西。
+
+### 17.3 ② pre-step 抛错 = 整轮失败
+
+〔代码确证〕三处串起来：
+
+| 位置 | 代码 | 含义 |
+|---|---|---|
+| `dsh-agent-loop:910` | `const decision = await this.dispatch.waterfall("agent/pre-step", {...}, () => {...})` | 正常路径是 waterfall |
+| `cordis:318-325` | `const next = () => { return (cbs.shift() ?? inner)(...args); };` | **waterfall 内部没有 try/catch**，监听器 throw 直接沿 Promise 链 reject |
+| `dsh-agent-loop:957` → `:1011` | `const decision = await this.preStep(target, {...});` 被外层 `catch (error)` 接住，随后 `turnEnds = { kind: "error", error: { message: errorChain(error), code: "UNKNOWN" } }; this.throwError(error);` | **整个 turn 终止**，不是跳过监听器、也不是只废掉这一步 |
+
+`turn/end` 事件会以 `reason = { kind: "error", ... }` 落盘。
+
+**对规范的影响**：§4.3-4 原来把「坏候选毒化整次目录读取」写成「该步整体失败」，**实际更重**——是整轮失败。所以：
+
+1. provider 必须在返回候选**之前**自校验（不能指望宿主兜住）。
+2. `list()` 内部必须 try/catch 后返回 `{ candidates: [], complete: false }`，而不是让异常冒出去。
+3. 消费 `ctx.skills.snapshot()` 的代码同样要 try/catch——它抛错时，调用它的 pre-step 监听器就成了上面这条链的起点。
+
+### 17.4 ③ skills/change 无合并窗口
+
+〔代码确证〕`dsh-skill:375-379`：
+
+`invalidateCache() { this.revision += 1; this.collectCache.clear(); this.notifyChange(); }`
+
+`dsh-skill:403-414`：
+
+`notifyChange() { for (const callback of this.ctx.events.dispatch("emit", ["skills/change"])) try { const returned = callback(); Promise.resolve(returned).catch(...) } catch (...) {...} }`
+
+**同步派发，逐次触发，没有任何时间窗合并**。调 100 次 `control.invalidate()` → 100 次 `revision += 1` + 100 次 emit。
+
+**但实际影响小于看起来**：消费者侧 `dsh-tool-skill/lib` 里 grep `skills/change` **0 命中**——`skill` 工具不订阅该事件，它每次调用直接走 `snapshot()`，靠 `collectCache` + `revision` 失效，本身就已经是「按需读取」。所以事件风暴打到的是**第三方订阅者**，不是工具面。
+
+**结论**：去抖不是宿主责任，是 provider 自己的责任。建议 provider 侧维护一个 `pendingInvalidate` 标志 + `setTimeout(0)` 合并，或在 watcher 回调里先 `queueMicrotask` 聚合一批文件变更再调一次 `invalidate()`。
+
+### 17.5 ④ never 策略在派发前就定死
+
+〔代码确证〕`dsh-user-approval:173-175`，注释与实现连在一起：
+
+`// The 'never' policy is decided HERE, before any dispatch: a listener ...`
+`if (this.effectivePolicy(session) === 'never') return 'rejected';`
+
+**时序**：工具层判 `ask` → 调 `approval.request()` → `ApprovalService.decide()` → **先查策略，never 直接 return 'rejected'，根本不派发 `approval/request` waterfall** → 监听器收到的是「已被拒」的终局。
+
+**结论**：`never` 会话里能力**照常可见、照常被判 ask、只是必被拒**。这回答了「是否要隐藏能力」：
+
+- **安全性上不必隐藏**——必拒，不会被绕过。
+- **体验上建议隐藏**——不隐藏等于让模型每次都撞一次确定性失败，白烧一轮 token 和一次往返。判据：显式请求会触达 `ask` 的能力，在 `never` 会话里从目录中略去，或在其描述里直接写明「本会话将被拒」。
+
+**顺带修正一个常见误读**：`approval: "never"` 是**更严**不是更松。它不产生「自动允许」，只产生「自动拒绝」。
+
+### 17.6 ⑤ MCP stdio 子进程不继承沙箱
+
+〔代码确证〕`dsh-mcp-client:40-45`：
+
+`case "stdio": return new StdioClientTransport({ command: config.command, args: config.args, env: buildChildEnv(config.env), cwd: config.cwd });`
+
+**四个字段，没有沙箱包装、没有 wrap 调用、没有 seatbelt/bwrap/prlimit 参数**。
+
+〔代码确证〕沙箱是「被调用才生效」的能力缝，不是全局钩子：
+
+| 位置 | 原文 | 含义 |
+|---|---|---|
+| `dsh-sandbox:253` | `Service Definition for the same-world process-confinement capability seam: wrap exact subprocess argv under a ...` | 需要调用方显式 `wrap` |
+| `dsh-bash-sandbox/package.json` | `Sandbox-consuming implementation of the DeepSeek Harness bash executor seam (confines every command via ctx.sandbox ...)` | 沙箱的**消费者**是 bash 执行器，不是进程树的看门狗 |
+
+**结论**：MCP stdio 子进程的唯一约束是 `command` / `args` 白名单、`cwd`、`env`（`buildChildEnv` 会注入什么需要另查，但它不构成文件系统围栏）。**「进程外必须自己判 P 档」由原来的设计选择，升级为不可省略的硬要求**——写规范时不能写成「建议」，要写成「否则即权限真空」。
+
+### 17.7 ⑥ startsRequestSeries：序列首请求标记
+
+〔代码确证〕`dsh-agent-loop:1056`：
+
+`const startsRequestSeries = firstAttempt && decision.startsRequestSeries === true;`
+
+两个消费点：
+
+| 位置 | 用法 | 效果 |
+|---|---|---|
+| `:1059` | `this.systemPrompt.project(renderedPrompt, { inHistory: ..., startsSeries: startsRequestSeries \|\| ... })` | 系统提示词投影是否按「新序列首节点」处理（头节点归并、后续系统节点收到空内容替换） |
+| `:1214` / `:1223` | `buildRequest(..., startsRequestSeries, ...)` → `const startsSeries = startsRequestSeries \|\| this.requestSurfaceGeneration !== surfaceGeneration;` | 决定 `request/header` 事件是否带 `startsSeries: true` |
+
+**生产方实例**：`dsh-goal-round-driver:350` `startsRequestSeries: true`。
+
+**语义结论**：它标记的是「这一步发出的请求是**一条新请求序列的第一个请求**」，用于让系统提示词投影重新建立序列基线、并给 request header 打标。**它不启动新对话、不影响 turn/step 计数、不重置历史。** 且 `firstAttempt &&` 意味着**重试轮不带**。
+
+### 17.8 ⑦ 桌面宿主的实际能力集不在 desktop-runtime.json
+
+〔实测〕`dsh/desktop-runtime.json` 顶层键只有五个：`schemaVersion` / `release` / `platform` / `arch` / `sharedPackages`（305 条）/ `files`（17187 条 asar 文件清单）。**它描述的是「打包了什么」，不是「启用了什么」。**
+
+真正的挂载源有两处：
+
+| 来源 | 实测内容 |
+|---|---|
+| `$DSH_HOME/profiles/desktop/package.json` 的 `dsh.profile.bundles` | **50 条**。其中 13 条是 `deepseek-ai` 官方实验包（`dsh-base`、`dsh-web-app`、`experimental-agent-team-profile`、`experimental-auto-review`、`experimental-inspector-profile`、`experimental-cot-translation-bundle`、`experimental-tool-worktree`、`experimental-terminal-bundle`、`experimental-session-search`、`experimental-session-titles-bundle`、`experimental-badge-skill-bundle`、`experimental-ralph-bundle`、`experimental-plugin-market-bundle`），其余 37 条是用户装的三方插件 |
+| `$DSH_HOME/profiles/desktop/cordis.patch.yml` | 33,078 字节，`insert:` 形态的补丁行 |
+
+`$DSH_HOME/profiles/desktop/cordis.yml` 内容是 `[]`，文件头注释原文：
+
+> an empty entry list. The tree is composed as patches: each bundle in package.json's `dsh.profile.bundles`, then `cordis.patch.yml`, then any `--patch` overlays. **Edit cordis.patch.yml, not this file.**
+
+**结论**：判「默认能力集」必须读 `package.json` 的 `dsh.profile.bundles`（再叠加 profile 的 `cordis.patch.yml`），读 `cordis.yml` 或 `desktop-runtime.json` 都得不到答案。
+
+### 17.9 ⑧ /name 手势顺序不是不变量
+
+〔代码确证〕`dsh-tool-skill` 里有两个独立的 pre-step 注册：
+
+| 位置 | 内容 |
+|---|---|
+| `:897` | `ctx.on("agent/pre-step", async ({ agent, messages, signal }, next) => {...})` —— 目录发布侧 |
+| `:932` | `ctx.on("agent/pre-step", async ({ agent, signal }, next) => {...})` —— 手势注入侧 |
+| `:1102` | `const SKILL_GESTURE = /(^\|\s)\/([a-z0-9]+(?:-[a-z0-9]+)*)(?=\s\|$)/g;` |
+
+〔代码确证〕`cordis:318-325` 的 waterfall：`listeners run outermost-first`，`cbs.shift() ?? inner` —— **先注册者在外层、先执行**。所以当前是 `:897` 先于 `:932`。
+
+〔代码确证〕`cordis` 的 `register` 支持 `options.prepend ? "unshift" : "push"` —— **任何插件都能把自己的 pre-step 插到这两个之前**。
+
+**结论**：规范里应写「`/name` 的注入位置**由注册顺序决定**；当前宿主里它排在目录发布之后，但这是顺序事实，不是可依赖的不变量」。任何依赖「一定最后」的逻辑都要改成自己显式排序。
+
+### 17.10 附带确证：宿主未被破甲插件污染（H-10 基线）
+
+〔实测〕本机 DSH `0.2.1-rc.5` 的破甲污染扫描，五个判据全部为「无」：
+
+| 判据 | 命令 | 结果 |
+|---|---|---|
+| patch 文件含破甲标记 | `grep -c "dsh-purge\|dshpg\|pj-mode"` 对 `$DSH_HOME/cordis.patch.yml` 与 `profiles/desktop/cordis.patch.yml` | **0 / 0** |
+| profile 依赖含破甲包 | 同上对 `profiles/desktop/package.json` | **0** |
+| 有补丁备份残留 | `ls *.dshpurge.bak` | **无** |
+| 有注入正文落盘 | `ls $DSH_HOME/prompt-inject.md` | **无** |
+| 有全局注入指令文件 | `ls $DSH_HOME/AGENTS.md` | **无** |
+
+这条是 N-1「不改宿主」的实测证据，也是 H-10 指标的 M0 基线。
 
 ---
 
