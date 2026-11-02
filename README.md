@@ -28,6 +28,7 @@
 | [DSH-pojia-ecosystem-report.md](DSH-pojia-ecosystem-report.md) | 生态全景盘点：55 仓库全景表、6 类技术路线、8 项风险清单、许可证一致性审计 | ~49 KB / 457 行 |
 | [docs/research/jailbreak-knowledge-base.md](docs/research/jailbreak-knowledge-base.md) | 通用越狱知识底座：手法分类、学术基准、防御共识、合规框架（123 个来源 URL） | ~90 KB / 775 行 |
 | **[docs/破甲提示词生态调研报告.md](docs/破甲提示词生态调研报告.md)** | **生态调研报告**：76 个 GitHub 越狱资源（提示词仓库 / 攻击框架 / 数据集 / 评测防护）的逐个可用性分析、双轴分类框架、三档适用性结论与价值排序清单 | ~52 KB / 676 行 |
+| [docs/桌面AI助手实现方案.md](docs/桌面AI助手实现方案.md) | 桌面 AI 助手实现方案：自治安装器 / 三态任务管控 / 两级记忆 / 重载 / 自检；模块 C/D 以评测台与分析台形态承接 | ~32 KB / 710 行 |
 | [vendor/PROVENANCE.md](vendor/PROVENANCE.md) | 12 个样本的 URL / commit SHA / LICENSE / 收录理由 / 已知失效点 | ~5 KB |
 
 ### 主报告的四部分
