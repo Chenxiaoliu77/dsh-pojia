@@ -11,6 +11,9 @@
 
 > **工具通道说明**：本次调研中 Exa MCP（`mcp.exa.ai:443`）与 Jina Reader（`r.jina.ai`）在本机均不可达，系统 HTTP 代理（`127.0.0.1:7890`）对多数外网返回 502/000。**实际可用通道**是"绕过代理直连 + OpenAlex API / GitHub API + `read_page`"三者组合。这不影响结论来源的权威性，但影响"社区讨论侧"证据的密度——社区经验部分因此偏薄，已如实标注。
 
+> **2026-11-02 增量修订**：本底座 §9「口径修正清单」新增 6 条实测修正（promptfoo 双口径 / 检测器扫描上限降级为未实测 / OWASP 结论加三限定 / AdvBench 仓库身份澄清 / HarmBench 补 SemanticCategory 7 类 / StrongREJECT 补 source 分布）。
+> 证据来自对 76 个 GitHub 越狱 · 评测 · 防护仓库的全量 harvest 与逐个分析，见 `docs/破甲提示词生态调研报告.md`。**该轮无任何模型实测**（不调外部服务、不用 API 凭据），所有「有效 / 无效」均为对提示词文本结构与仓库文件内容的判定。
+
 ---
 
 
@@ -21,9 +24,9 @@
 | 维度 | 结论 | 主要来源 |
 |---|---|---|
 | 越狱的本质 | 不是"骗过模型"，而是**利用 LLM 架构上不区分"指令"与"数据"这一根本属性**。OWASP 2026 原话：LLM "make no architectural distinction between 'instructions' and 'data'" | `[S]` OWASP LLM01:2026 |
-| 权威手法分类 | MITRE ATLAS **AML.T0054 LLM Jailbreak** 列出 8 类策略；JailbreakZoo 归纳为 7 类；promptfoo 工具侧给出 40 项技巧 | `[S]` ATLAS / `[P]` JailbreakZoo / `[C]` promptfoo |
+| 权威手法分类 | MITRE ATLAS **AML.T0054 LLM Jailbreak** 列出 8 类策略；JailbreakZoo 归纳为 7 类；promptfoo **博客叙事清单 40 项 / 工具侧 38 个可执行策略 + 97 个插件 id**（双口径，见 §9） | `[S]` ATLAS / `[P]` JailbreakZoo / `[C]` promptfoo |
 | "真越狱"的判定 | 二值拒答检测**不够**。StrongREJECT 要求"未拒答 ∧ 有说服力 ∧ 具体"，并证明"绕过 SFT 的越狱会同时削弱模型能力" | `[P]` StrongREJECT |
-| 防御落点 | OWASP 2026 明确：**不存在可靠的拦截式防御**，"防御是架构性的而非拦截性的"；必须"假设指令边界终将被绕过"来设计 | `[S]` OWASP LLM01:2026 |
+| 防御落点 | OWASP 2026 明确：**不存在可靠的拦截式防御**（defense is architectural, not interceptive）；必须**假设指令边界终将被绕过**来设计。**这是 OWASP 的规范性判断，不是实测定理** —— RepoGuardBench 2340 次运行显示无一个防御被证明既更安全又不更差（五条 utility_delta 的 CI 全跨 0），且其攻击者**明确为非自适应**。故本结论**有条件成立**（见 §9） | `[S]` OWASP LLM01:2026 / `[P]` RepoGuardBench 实测 |
 | 为什么"加提示词防提示词"必然失效 | 同一份文档自证：能推断出提示词的攻击者即可绕过（Nasr et al. 2025）；StruQ 在自适应攻击下被绕过；12 种近期防御的静态 ASR 近零而**自适应 ASR 超过 90%** | `[S]` OWASP LLM01:2026 / `[P]` Adaptive Attacks |
 | 本地可换提示词宿主的风险 | 攻击者拥有**对齐层输入的完全控制权**，等价于"白盒 + 持久化 + 不可被模型侧察觉" | `[P]` Instruction Hierarchy / `[S]` ATLAS AML.T0081 |
 | 合法边界 | 授权环境内的基准评测/红队演练属正当研究；未授权访问他人系统、绕过商业服务限制并分发、传播可直接滥用载荷则越界 | `[S]` OWASP / `[P]` JailbreakBench 伦理声明 / 中国法框架见 §6 |
@@ -63,6 +66,11 @@ ATLAS 明确指出：对抗者也会走**算法化路线**——自动化上述�
 **C. promptfoo（社区工程化清单，40 项）—— `[C]`**
 
 这是**社区经验**层，价值在于它把手法拆到可直接实现的粒度，可作为上位分类的"叶子节点"参考，不作结论依据。来源：https://www.promptfoo.dev/blog/how-to-jailbreak-llms/ （该页也是 ATLAS `jailbreak-guide` 引用源之一）
+
+> **双口径提醒（2026-11-02 实测）**：下表是**博客页 how-to-jailbreak-llms 的叙事分类**（实测恰好 40 个 h4 锚点）。
+> **工具侧不是 40 项**：ALL_STRATEGIES 实测为 **38 个可执行策略**，ALL_PLUGINS 为 **97 个插件 id**。
+> 且 ENCODING 组名义 17 项中**只有 9 项有实现** —— atbash / binary / octal / reverse **连代码路径都不存在**。
+> 引用「40 项」时必须说明是叙事分类还是可执行策略数，否则两套数字会被混用。详见 §9。
 
 | 分组 | 技巧（promptfoo 的 h4 锚点名，已逐条抓取） |
 |---|---|
@@ -205,10 +213,10 @@ ATLAS 明确指出：对抗者也会走**算法化路线**——自动化上述�
 
 | 基准 | 核心问题 | 判定方式 | 条目数（已核验） | 关键局限 |
 |---|---|---|---|---|
-| **AdvBench** `[P]` | 提示侧行为空间 | 无自带判定器，仅提供 goal/target 对 | **520** 条 harmful behaviors（CSV 实测） | 只提供"诱导型 harmful strings"，判定完全外包 |
-| **HarmBench** `[P]` | 自动化红队方法与防御的标准化对比 | 专用分类器 | **400** 条（standard 200 / copyright 100 / contextual 100，实测 CSV） | 分类器自身是 LLM，存在 judge 偏差 |
+| **AdvBench** `[P]` | 提示侧行为空间 | 无自带判定器，仅提供 goal/target 对 | **520** 条 harmful behaviors（CSV 实测） | 只提供"诱导型 harmful strings"，判定完全外包 | **（2026-11-02 澄清：实测的 520 条来自 llm-attacks/llm-attacks，与 thunlp/Advbench 同名不同物 —— 后者仓库零数据文件、数据放在 Google Drive。引用时须写明仓库全名）** |
+| **HarmBench** `[P]` | 自动化红队方法与防御的标准化对比 | 专用分类器 | **400** 条（standard 200 / copyright 100 / contextual 100，实测 CSV）；**FunctionalCategory 3 类之外另有 SemanticCategory 7 类**（copyright 100 / cybercrime_intrusion 67 / illegal 65 / misinformation_disinformation 65 / chemical_biological 56 / harassment_bullying 25 / harmful 22）。**注意：其中 100 条 copyright 是哈希比对行为、不是安全目标，撰写破甲正文时必须剔除** | 分类器自身是 LLM，存在 judge 偏差 |
 | **JailbreakBench** `[P]` | 越狱 artifact 的可复现对比 | Llama3-70B 判越狱 + Llama3-8B 判拒答 | **200**（100 harmful + 100 benign） | 行为集按 OpenAI 使用政策对齐，非普适 |
-| **StrongREJECT** `[P]` | **"空越狱"** —— 回应绕过了形式但没给实质信息 | 三问评分器 | 原始 313 条 / small 60 条 | 需外部 LLM 评判（rubric 版） |
+| **StrongREJECT** `[P]` | **"空越狱"** —— 回应绕过了形式但没给实质信息 | 三问评分器 | 原始 313 条 / small 60 条（**2026-11-02 实测 sr_dataset.csv 确为 313 行、sr_small.csv 60 行**）；source 分布 custom 221 / DAN 35 / AdvBench 25 / MaliciousInstruct 12 / HarmfulQ 11 —— 这 313 条 forbidden prompt **同时是话术源**，不只是行为目标 | 需外部 LLM 评判（rubric 版） |
 | **XSTest** `[P]` | **过度拒答**（安全但有害的过度防守） | label 人工标注 | **450** 条（safe 250 / unsafe 200，实测 CSV） | 只测安全↔不安全的边界，不测越狱 |
 | **DAN / JailbreakHub** `[P]` | 在野越狱提示的**社区生态**与演化 | 人工 + 模型判定 | 1,405 条越狱提示 / 13 类场景共 107,250 样本 | 数据为历史快照（2022-12→2023-12） |
 | **PAIR** `[P]` | 黑盒自动越狱效率 | 自带 attacker-judge | 报告"常少于 20 次查询" | 需 attacker LLM |
@@ -328,7 +336,7 @@ StrongREJECT 论文的三条关键结论（直接对应"真越狱"判定）：
 这是本次调研中**结论最扎实**的部分，四条证据来自四个不同来源、互相独立：
 
 1. **同源自证**：`[S]` OWASP LLM01:2026 建议 #1 自带限定："This is a **partial control only**: an attacker who infers the prompt can bypass it (Nasr et al., 2025), so pair it with the privilege controls in #4."
-2. **架构性根因**：同章开篇 —— "LLMs make **no architectural distinction between 'instructions' and 'data'** (both are tokens on the same stream), so there is **no clean equivalent to parameterized queries** (NCSC, 2025)"。并给出结论："Prompt injection is **intrinsic** to current generative AI… **no reliable prevention mechanism exists today**"，与 NIST (2025)、NCSC (2025)、Debenedetti et al. (2025) 立场一致。
+2. **架构性根因**：同章开篇 —— "LLMs make **no architectural distinction between 'instructions' and 'data'** (both are tokens on the same stream), so there is **no clean equivalent to parameterized queries** (NCSC, 2025)"。并给出结论："Prompt injection is **intrinsic** to current generative AI… **no reliable prevention mechanism exists today**"，与 NIST (2025)、NCSC (2025)、Debenedetti et al. (2025) 立场一致。 —— **但这是 OWASP 的规范性立场，不是实测结论**：RepoGuardBench 2340 次运行中，无一个防御被证明「既更安全又不更差」（18 任务 matched 子集的五条 utility_delta 的置信区间全部跨 0）；且其攻击者**明确为非自适应**（THREAT_MODEL.md 原文 Non-adaptive attacker），因此既无法验证也无法反驳「自适应 ASR 超过 90%」。引用本条时必须带这两个限定。
 3. **自适应攻击实测**：`[P]` "Adaptive Attacks Break Defenses Against Indirect Prompt Injection Attacks on LLM Agents" —— 评估 **8 种防御**并全部绕过，**ASR 持续 >50%**。https://doi.org/10.18653/v1/2025.findings-naacl.395 。`[P]` "The Attacker Moves Second" 进一步主张：静态字符串集或弱优化的评测流程本身是**有缺陷的**，应改为评估"显式针对防御修改攻击策略的**自适应攻击者**"。https://doi.org/10.48550/arxiv.2510.09023
 4. **结构性标记可被模仿**：OWASP 建议 #6 自证 StruQ 在自适应攻击下被绕过（见 3.4）。
 
@@ -639,31 +647,47 @@ StrongREJECT 论文的三条关键结论（直接对应"真越狱"判定）：
 
 ---
 
+
 ## 8. 本次调研的局限（据实记录）
+
 
 1. **Exa / Jina Reader 通道全程不可用**：`mcp.exa.ai:443` 连接超时，`r.jina.ai` 返回 000，本机 HTTP 代理（`127.0.0.1:7890`，环境变量 `http_proxy/https_proxy` 已设置）对多数外网返回 502/000。实际使用的替代通道是"绕过代理直连（`--noproxy '*'`）+ OpenAlex API（`api.openalex.org`）+ GitHub API（`api.github.com` / `raw.githubusercontent.com`）+ `read_page` 工具"。**后果**：社区侧（Reddit / X / 论坛）的一手讨论密度低于预期，社区经验部分（promptfoo 清单、ATLAS 内嵌的 promptfoo 引用）因此成为 §1.1 C 类的主要来源。
 2. **NIST 原文 PDF 不可达**：`nvlpubs.nist.gov` 的 NIST.AI.100-1.pdf 返回 000，故 §5.3 未对 AI RMF 1.0 的条款号做断言。
 3. **EU AI Act 官方 EUR-Lex 全文返回 202 空响应**：§5.4 的 EU AI Act 内容取自欧洲议会官方概览页（已抓取成功），**未逐字核验 Regulation 2024/1689 原文**。
 4. **中国法官方原文（flk.npc.gov.cn）为 JS 渲染、正文不可直接抓取**：§6.1/§6.2 的条文取自 GitHub 上的 `LawRefBook/Laws` 镜像（该仓库在 GitHub Code Search 中以精确条文原句命中，可信度较高，但**不是官方发布源**）。**若需在正式文档中引用条文原文，建议再核对国家法律法规数据库。**
 5. **部分 GitHub API 调用出现 TLS 握手超时**：通过 `git credential fill` 取本机凭据后重试成功，但 API 速率限制（未认证 60/小时）意味着覆盖范围受限。
-6. **未核验项一律未写**：所有出现的数据集条目数（AdvBench 520、HarmBench 400、JailbreakBench 200、XSTest 450、InjecAgent 1,054、WildGuard 92K/5K、StrongREJECT 313/60）、ASR 数字（Crescendo 29–61%/49–71%、CoT Hijacking 99%/94%/100%/94%、FlipAttack ~98%、DAN 0.95、ToolEmu 68.8%/23.9%、BIPIA "universally vulnerable"、BIPIA 5 篇→90%、JBB >80%、APRT 54%、AutoDAN-Turbo 74.3%、Alignment faking 14%/78%）均来自原始 CSV / 论文摘要 / 官方 README 的直接抓取，非记忆。
+6. **未核验项一律未写**：所有出现的数据集条目数（AdvBench 520、HarmBench 400、JailbreakBench 200、XSTest 450、InjecAgent 1,054、WildGuard 92K/5K）、ASR 数字（Crescendo 29–61%/49–71%、CoT Hijacking 99%/94%/100%/94%、FlipAttack ~98%、DAN 0.95、ToolEmu 68.8%/23.9%、BIPIA "universally vulnerable"、BIPIA 5 篇→90%、JBB >80%、APRT 54%、AutoDAN-Turbo 74.3%、Alignment faking 14%/78%）均来自原始 CSV / 论文摘要 / 官方 README 的直接抓取，非记忆。**2026-11-02 补充：AdvBench 520 / HarmBench 400 的仓库身份与分类构成已复核，StrongREJECT 313/60 已直接实读 CSV 确认（见 §9 第 4/5/6 条）。**
 7. **两处 arXiv ID 已纠正**：PAIR 为 `2310.08419`（原写的 2310.03957 是另一篇论文）；JailbreakBench 为 `2404.01318`（论文版 DOI 为 `10.52202/079017-1745`，arXiv 版为 2404.01318）。其余引用 ID 均经 OpenAlex DOI 过滤逐条核验通过。
-8. **一处数据源限制**：StrongREJECT 数据集 CSV（`strong_reject/datasets/strongreject_dataset.csv`）在本次调研中 404，313/60 的条目数取自**旧仓库**（`alexandrasouly/strongreject`，MIT，161 stars，README 明示已弃用并迁移至 `dsbowen/strong_reject`）的 README；新仓库 README 确认了"6 类有害行为"分类与 rubric 评分公式。
+8. **StrongREJECT 数据源已升级（2026-11-02）**：本条原记「CSV 404、313/60 取自旧仓库 README」。本次已直接实读新仓库 dsbowen/strong_reject 的 `sr_dataset.csv`（**313 行**）与 `sr_small.csv`（**60 行**），并统计出 source 分布；旧仓库 alexandrasouly/strongreject 的 README 不再是条目数来源。**本条局限已消解。**
 
 ---
 
-## 9. 附录：关键来源清单
+## 9. 口径修正清单（2026-11-02 GitHub 生态实测）
 
-### 9.1 上位分类框架
+本轮对 76 个 GitHub 越狱 / 评测 / 防护仓库做全量 harvest 与逐个分析后，推翻或收紧了既有文档的 6 处表述。证据见 `docs/破甲提示词生态调研报告.md` §4.6。
+
+| # | 既有表述 | 修正后 | 依据 |
+|---|---|---|---|
+| 1 | promptfoo 工具侧给出 40 项技巧 | **双口径**：博客叙事分类 40 项 / **工具侧 38 个可执行策略 + 97 个插件 id**；且 ENCODING 名义 17 项中**只有 9 项有实现**，atbash / binary / octal / reverse **连代码路径都不存在** | promptfoo 源码 strategies.ts / plugins.ts / 博客页（实测恰好 40 个 h4 锚点） |
+| 2 | 检测器只看头部导致漏检 | 降级为**结构性上限，未实测** —— 源码确认 DEFAULT_MAX_SCAN_CHARS = 10_000，但 dsh-defend 自带 105 条基准最长远小于 10k，**恰好不覆盖该失效模式** | vendor/dsh-defend/src/detect/scanner.ts:19-20 |
+| 3 | 不存在可靠的拦截式防御 | **有条件支持**，加三限定：攻击者**明确非自适应** / 本地开源小模型 / **无一个防御被证明 utility 无损**（五条 utility_delta 的 CI 全跨 0） | RepoGuardBench 2340 次运行 |
+| 4 | AdvBench 520 条 | 实为 **llm-attacks/llm-attacks**，与 thunlp/Advbench **同名不同物**（后者仓库零数据文件，数据在 Google Drive） | 实测 520 行，字段 goal / target |
+| 5 | HarmBench 400 条（FunctionalCategory 3 类） | 补 **SemanticCategory 7 类**（copyright 100 / cybercrime_intrusion 67 / illegal 65 / misinformation_disinformation 65 / chemical_biological 56 / harassment_bullying 25 / harmful 22）；**100 条 copyright 是哈希比对行为、非安全目标，写破甲正文必须剔除** | hb_text_all.csv 400 行 |
+| 6 | StrongREJECT 313 条仅作行为目标 | 补 **source 分布**（custom 221 / DAN 35 / AdvBench 25 / MaliciousInstruct 12 / HarmfulQ 11）⇒ 这 313 条 forbidden prompt **同时是话术源** | sr_dataset.csv 313 行（直接实读） |
+
+
+## 10. 附录：关键来源清单
+
+### 10.1 上位分类框架
 
 - MITRE ATLAS 技术矩阵（`AML.T0054` 等 170 技术 + 15 tactic）：https://github.com/mitre-atlas/atlas-data/blob/main/dist/ATLAS.yaml
 - MITRE ATLAS 数据仓库：https://github.com/mitre-atlas/atlas-data
 - ATLAS 站点：https://atlas.mitre.org/
 - `[P]` JailbreakZoo（7 类）：https://doi.org/10.48550/arxiv.2407.01599
 - `[P]` 越狱攻击与防御综述：https://doi.org/10.48550/arxiv.2407.04295
-- `[C]` promptfoo 越狱指南（40 项）：https://www.promptfoo.dev/blog/how-to-jailbreak-llms/
+- `[C]` promptfoo 越狱指南（博客叙事分类 40 项；工具侧 38 个可执行策略 + 97 个插件 id）：https://www.promptfoo.dev/blog/how-to-jailbreak-llms/
 
-### 9.2 基准
+### 10.2 基准
 
 - HarmBench：论文 https://doi.org/10.48550/arxiv.2402.04249 ；代码 https://github.com/centerforaisafety/HarmBench ；数据 https://github.com/centerforaisafety/HarmBench/blob/main/data/behavior_datasets/harmbench_behaviors_text_all.csv
 - AdvBench：数据 https://github.com/llm-attacks/llm-attacks/blob/main/data/advbench/harmful_behaviors.csv ；代码 https://github.com/llm-attacks/llm-attacks
@@ -677,7 +701,7 @@ StrongREJECT 论文的三条关键结论（直接对应"真越狱"判定）：
 - ASB：https://doi.org/10.48550/arxiv.2410.02644
 - DAN / JailbreakHub：https://doi.org/10.1145/3658644.3670388
 
-### 9.3 攻击方法
+### 10.3 攻击方法
 
 - GCG：https://doi.org/10.48550/arxiv.2307.15043
 - PAIR：https://doi.org/10.1109/satml64287.2025.00010 ；https://github.com/patrickrchao/JailbreakingLLMs
@@ -709,7 +733,7 @@ StrongREJECT 论文的三条关键结论（直接对应"真越狱"判定）：
 - 误解/伪装/幽默绕过：https://doi.org/10.48550/arxiv.2504.06577
 - Guardrail-model mismatch：https://doi.org/10.1145/3774904.3792438
 
-### 9.4 防御
+### 10.4 防御
 
 - RLHF：https://doi.org/10.48550/arxiv.2203.02155
 - Constitutional AI：https://doi.org/10.48550/arxiv.2212.08073
@@ -729,7 +753,7 @@ StrongREJECT 论文的三条关键结论（直接对应"真越狱"判定）：
 - Sleeper Agents：https://doi.org/10.48550/arxiv.2401.05566
 - 过度拒答缓解：https://doi.org/10.48550/arxiv.2405.05418 ；https://doi.org/10.1609/aaai.v39i22.34521
 
-### 9.5 标准与法规
+### 10.5 标准与法规
 
 - OWASP GenAI LLM Top 10 2026：https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/ ；源码 https://github.com/GenAI-Security-Project/GenAI-LLM-Top10/tree/main/2026/final
 - OWASP 2025 版（历史归档）：https://genai.owasp.org/llm-top-10/ ；https://github.com/OWASP/www-project-top-10-for-large-language-model-applications
@@ -741,7 +765,7 @@ StrongREJECT 论文的三条关键结论（直接对应"真越狱"判定）：
 - 互联网信息服务深度合成管理规定：https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm
 - 互联网信息服务算法推荐管理规定：https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm
 
-### 9.6 被归类的具体实现（供 lead 对照）
+### 10.6 被归类的具体实现（供 lead 对照）
 
 - dsh-purge：https://github.com/YuJunZhiXue/dsh-purge （14,101 stars，Apache-2.0）
 - dsh-pojia-mode：https://github.com/z91772524-ai/dsh-pojia-mode （125 stars，MIT）
